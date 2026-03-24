@@ -231,12 +231,12 @@
 
     <!-- Planimetria Before/After -->
     <div class="ba-wrap">
-        <div class="ba-box">
-            <img src="img/planimetria-before.jpg" alt="Planimetria catastale originale" onerror="this.src='https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&q=70'">
+        <div class="ba-box" style="background:#f5f5f5">
+            <img src="img/planimetria-before.jpg" alt="Planimetria catastale originale" style="object-fit:contain;background:#f5f5f5;padding:1rem" onerror="this.src='https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&q=70'">
             <span class="ba-tag before">📐 Planimetria catastale grezza</span>
         </div>
-        <div class="ba-box">
-            <img src="img/planimetria-after.jpg" alt="Planimetria elaborata MetaCasa" onerror="this.src='https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=70'">
+        <div class="ba-box" style="background:#f8f9fc">
+            <img src="img/planimetria-after.jpg" alt="Planimetria elaborata MetaCasa" style="object-fit:contain;background:#f8f9fc;padding:1rem" onerror="this.src='https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=70'">
             <span class="ba-tag after">🤖 Output MetaCasa AI</span>
         </div>
     </div>
@@ -255,7 +255,7 @@
     <!-- Virtual Tour -->
     <div style="margin-top:2rem">
         <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);position:relative">
-            <img src="img/virtual-tour.jpg" alt="Virtual Tour MetaCasa" style="width:100%;display:block" onerror="this.parentElement.innerHTML='<div style=padding:4rem;text-align:center;background:var(--card)><p style=color:var(--muted)>Virtual tour loading...</p></div>'">
+            <img src="img/virtual-tour.jpg" alt="Virtual Tour MetaCasa" style="width:100%;display:block;object-fit:cover;height:400px;object-position:center 30%" onerror="this.parentElement.innerHTML='<div style=padding:4rem;text-align:center;background:var(--card)><p style=color:var(--muted)>Virtual tour loading...</p></div>'">
             <div style="position:absolute;top:12px;left:12px;background:rgba(15,15,26,0.85);backdrop-filter:blur(10px);padding:0.3rem 0.8rem;border-radius:8px;font-size:0.7rem;font-weight:600;font-family:'Space Grotesk';color:var(--cyan);border:1px solid rgba(6,182,212,0.2)">Virtual Tour Immersivo</div>
         </div>
         <p style="text-align:center;margin-top:0.8rem;font-size:0.8rem;color:var(--muted)">Da planimetria catastale a virtual tour navigabile con arredo fotorealistico. Generato dall'AI.</p>
