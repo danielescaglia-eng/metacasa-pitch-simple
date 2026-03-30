@@ -118,11 +118,16 @@
 </div>
 
 <script>
-const CRM_PW     = 'metacasa2026';
-const LEADS_KEY  = 'mc_leads';
-const AUTH_KEY   = 'mc_crm_auth';
+// ── SUPABASE CONFIG (same as index-v2.html) ──
+const SB_URL  = 'SUPABASE_URL';
+const SB_KEY  = 'SUPABASE_ANON_KEY';
+const SB_ON   = SB_URL !== 'SUPABASE_URL';
 
-// Auth
+const CRM_PW    = 'metacasa2026';
+const LEADS_KEY = 'mc_leads';
+const AUTH_KEY  = 'mc_crm_auth';
+
+// ── AUTH ──
 document.getElementById('authBtn').addEventListener('click', tryAuth);
 document.getElementById('pwInput').addEventListener('keydown', e => { if(e.key==='Enter') tryAuth(); });
 
@@ -143,57 +148,93 @@ function showCRM(){
     renderDashboard();
 }
 
-// Check session
 if(sessionStorage.getItem(AUTH_KEY) === '1') showCRM();
 
-function getLeads(){
+// ── DATA FETCHING ──
+function sbHeaders(){
+    return { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+}
+
+async function fetchLeadsFromSupabase(){
+    const res = await fetch(
+        `${SB_URL}/rest/v1/pitch_leads?select=*&order=last_view_at.desc`,
+        { headers: sbHeaders() }
+    );
+    if(!res.ok) throw new Error(await res.text());
+    const rows = await res.json();
+    // normalize field names for shared render function
+    return rows.map(r => ({
+        ...r,
+        registeredAt: r.registered_at,
+        lastViewAt:   r.last_view_at
+    }));
+}
+
+function getLocalLeads(){
     try{ return JSON.parse(localStorage.getItem(LEADS_KEY))||[]; } catch{ return []; }
 }
 
-function renderDashboard(){
-    const leads = getLeads();
-    const today = new Date().toDateString();
+// ── RENDER ──
+async function renderDashboard(){
+    const container = document.getElementById('tableContainer');
+    container.innerHTML = '<div class="empty-state"><p style="color:var(--cyan)">⟳ Caricamento lead...</p></div>';
 
-    // Stats
-    const totalViews    = leads.reduce((s,l) => s + (l.views||0), 0);
-    const investors     = leads.filter(l => l.role === 'investor' || l.role === 'angel').length;
-    const todayLeads    = leads.filter(l => new Date(l.registeredAt).toDateString() === today).length;
+    let leads = [];
+    let source = 'local';
+
+    if(SB_ON){
+        try {
+            leads  = await fetchLeadsFromSupabase();
+            source = 'supabase';
+            // also sync to localStorage for offline use
+            localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
+        } catch(err){
+            console.warn('Supabase fetch failed, using localStorage:', err);
+            leads = getLocalLeads();
+        }
+    } else {
+        leads = getLocalLeads();
+    }
+
+    const today      = new Date().toDateString();
+    const totalViews = leads.reduce((s,l) => s + (l.views||0), 0);
+    const investors  = leads.filter(l => l.role === 'investor' || l.role === 'angel').length;
+    const todayLeads = leads.filter(l => new Date(l.registeredAt||l.registered_at).toDateString() === today).length;
 
     document.getElementById('s_total').textContent     = leads.length;
     document.getElementById('s_views').textContent     = totalViews;
     document.getElementById('s_investors').textContent = investors;
     document.getElementById('s_today').textContent     = todayLeads;
 
-    // Table
-    const container = document.getElementById('tableContainer');
+    // source badge
+    const hdr = document.querySelector('.table-header span');
+    if(hdr) hdr.textContent = source === 'supabase'
+        ? '✅ Dati sincronizzati cross-device (Supabase)'
+        : '⚠️ Dati locali — configura Supabase per tracking cross-device';
+
     if(!leads.length){
         container.innerHTML = '<div class="empty-state"><p>Nessun lead ancora. Condividi la pitch page per raccogliere dati.</p></div>';
         return;
     }
 
-    const roleLabel = {investor:'Investitore',angel:'Business Angel',partner:'Partner',advisor:'Advisor',other:'Altro',''  : '—'};
-    const roleClass = {investor:'role-investor',angel:'role-angel',partner:'role-partner',advisor:'role-advisor',other:'role-other',''  :'role-other'};
-
-    const sorted = [...leads].sort((a,b) => new Date(b.lastViewAt) - new Date(a.lastViewAt));
+    const roleLabel = {investor:'Investitore',angel:'Business Angel',partner:'Partner',advisor:'Advisor',other:'Altro','':'—'};
+    const roleClass = {investor:'role-investor',angel:'role-angel',partner:'role-partner',advisor:'role-advisor',other:'role-other','':'role-other'};
+    const sorted = [...leads].sort((a,b) => new Date(b.lastViewAt||b.last_view_at) - new Date(a.lastViewAt||a.last_view_at));
 
     const rows = sorted.map(l => {
         const dots = Math.min(l.views||0, 10);
-        const dotHtml = Array.from({length:10}, (_,i) =>
-            `<span class="views-dot${i < dots ? ' active':''}"></span>`
-        ).join('');
-        const reg = new Date(l.registeredAt).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'});
-        const last = new Date(l.lastViewAt).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+        const dotHtml = Array.from({length:10},(_,i) =>
+            `<span class="views-dot${i<dots?' active':''}"></span>`).join('');
+        const regDate  = l.registeredAt || l.registered_at;
+        const lastDate = l.lastViewAt   || l.last_view_at;
+        const reg  = regDate  ? new Date(regDate).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+        const last = lastDate ? new Date(lastDate).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
         return `<tr>
             <td><strong>${escHtml(l.name||'—')}</strong></td>
             <td style="color:var(--cyan)">${escHtml(l.email||'—')}</td>
             <td style="color:var(--gray)">${escHtml(l.company||'—')}</td>
             <td><span class="role-badge ${roleClass[l.role]||'role-other'}">${roleLabel[l.role]||l.role||'—'}</span></td>
-            <td>
-                <div class="views-bar">
-                    <strong style="font-family:'Space Grotesk';font-size:0.88rem">${l.views||0}</strong>
-                    <div class="views-dots">${dotHtml}</div>
-                </div>
-            </td>
+            <td><div class="views-bar"><strong style="font-family:'Space Grotesk';font-size:0.88rem">${l.views||0}</strong><div class="views-dots">${dotHtml}</div></div></td>
             <td style="color:var(--muted);font-size:0.75rem">${reg}</td>
             <td style="color:var(--muted);font-size:0.75rem">${last}</td>
         </tr>`;
@@ -207,30 +248,34 @@ function renderDashboard(){
             </tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
+
+    // Store leads ref for CSV export
+    window._crmLeads = leads;
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Export CSV
+// ── EXPORT CSV ──
 document.getElementById('exportBtn').addEventListener('click', () => {
-    const leads = getLeads();
+    const leads = window._crmLeads || getLocalLeads();
     if(!leads.length){ alert('Nessun lead da esportare.'); return; }
     const header = 'Nome,Email,Azienda,Ruolo,Visualizzazioni,Registrato,Ultima visita\n';
     const rows = leads.map(l =>
-        [l.name,l.email,l.company,l.role,l.views,l.registeredAt,l.lastViewAt]
+        [l.name, l.email, l.company, l.role, l.views,
+         l.registeredAt||l.registered_at, l.lastViewAt||l.last_view_at]
         .map(v => `"${(v||'').toString().replace(/"/g,'""')}"`)
         .join(',')
     ).join('\n');
-    const blob = new Blob([header+rows], {type:'text/csv;charset=utf-8;'});
+    const blob = new Blob([header+rows],{type:'text/csv;charset=utf-8;'});
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url; a.download = 'metacasa-leads.csv'; a.click();
     URL.revokeObjectURL(url);
 });
 
-// Clear demo
+// ── CLEAR ──
 document.getElementById('clearBtn').addEventListener('click', () => {
-    if(confirm('Sicuro di voler eliminare tutti i dati? Questa azione è irreversibile.')){
+    if(confirm('Sicuro di voler eliminare tutti i dati locali? I dati su Supabase non vengono eliminati da qui.')){
         localStorage.removeItem(LEADS_KEY);
         renderDashboard();
     }

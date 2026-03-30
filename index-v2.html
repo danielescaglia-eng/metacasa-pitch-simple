@@ -891,70 +891,105 @@
 </script>
 
 <script>
-// ===== GATE & CRM SYSTEM =====
+// ===== GATE & CRM SYSTEM (Supabase cross-device + localStorage fallback) =====
 (function(){
-    const LEADS_KEY = 'mc_leads';
-    const USER_KEY  = 'mc_user';
+    // ── SUPABASE CONFIG ── fill after creating project on supabase.com ──
+    const SB_URL  = 'SUPABASE_URL';   // e.g. https://xxxx.supabase.co
+    const SB_KEY  = 'SUPABASE_ANON_KEY'; // anon/public key
+    const SB_ON   = SB_URL !== 'SUPABASE_URL'; // true once configured
 
+    // ── LOCAL STORAGE KEYS ──
+    const USER_KEY  = 'mc_user';
+    const LEADS_KEY = 'mc_leads';
+
+    function getUser(){  try{ return JSON.parse(localStorage.getItem(USER_KEY));  }catch{ return null; } }
+    function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
     function getLeads(){ try{ return JSON.parse(localStorage.getItem(LEADS_KEY))||[]; }catch{ return []; } }
     function saveLeads(l){ localStorage.setItem(LEADS_KEY, JSON.stringify(l)); }
-    function getUser(){  try{ return JSON.parse(localStorage.getItem(USER_KEY)); }catch{ return null; } }
-    function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
 
-    function registerLead(data){
+    // ── SUPABASE HELPERS ──
+    function sbHeaders(){
+        return { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
+                 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+    }
+
+    async function sbUpsertLead(data){
+        // upsert by email: insert or increment views
+        const res = await fetch(`${SB_URL}/rest/v1/pitch_leads?on_conflict=email`, {
+            method: 'POST',
+            headers: { ...sbHeaders(), 'Prefer': 'resolution=merge-duplicates,return=representation' },
+            body: JSON.stringify({
+                name:           data.name,
+                email:          data.email.toLowerCase(),
+                company:        data.company || '',
+                role:           data.role    || '',
+                registered_at:  data.registered_at || new Date().toISOString(),
+                views:          data.views || 1,
+                last_view_at:   new Date().toISOString()
+            })
+        });
+        if(!res.ok) throw new Error(await res.text());
+        const rows = await res.json();
+        return rows[0];
+    }
+
+    async function sbIncrementView(email){
+        // RPC to increment views atomically
+        const res = await fetch(`${SB_URL}/rest/v1/rpc/increment_views`, {
+            method: 'POST',
+            headers: sbHeaders(),
+            body: JSON.stringify({ p_email: email.toLowerCase() })
+        });
+        if(!res.ok) throw new Error(await res.text());
+        return res.json();
+    }
+
+    // ── LOCAL FALLBACK ──
+    function localUpsert(data){
         const leads = getLeads();
         const now   = new Date().toISOString();
         let lead = leads.find(l => l.email.toLowerCase() === data.email.toLowerCase());
         if(lead){
             lead.views = (lead.views||0) + 1;
-            lead.lastViewAt = now;
+            lead.last_view_at = now;
+            lead.lastViewAt   = now;
         } else {
-            lead = { id: Date.now(), ...data, registeredAt: now, views: 1, lastViewAt: now };
+            lead = { id: Date.now(), ...data,
+                     email: data.email.toLowerCase(),
+                     registered_at: now, registeredAt: now,
+                     views: 1, last_view_at: now, lastViewAt: now };
             leads.push(lead);
         }
         saveLeads(leads);
-        saveUser(lead);
         return lead;
     }
 
-    function trackView(){
-        const user = getUser();
-        if(!user) return;
-        const leads = getLeads();
-        const lead  = leads.find(l => l.id === user.id);
-        if(lead){
-            lead.views = (lead.views||0) + 1;
-            lead.lastViewAt = new Date().toISOString();
-            saveLeads(leads);
-            saveUser(lead);
-        }
-    }
-
+    // ── GATE UI ──
     function unlock(){
         document.body.classList.remove('content-locked');
         document.getElementById('pitchContent').style.display = '';
     }
+    function lock(){ document.body.classList.add('content-locked'); }
 
-    function lock(){
-        document.body.classList.add('content-locked');
-    }
-
-    // On load — check if already registered
+    // ── ON LOAD ──
     const existingUser = getUser();
     if(existingUser && existingUser.email){
-        trackView();
+        // Known user on this device — track view silently
+        if(SB_ON){ sbIncrementView(existingUser.email).catch(()=>{}); }
+        else { localUpsert(existingUser); }
         unlock();
     } else {
         lock();
     }
 
-    // Modal logic
+    // ── MODAL LOGIC ──
     const modal     = document.getElementById('regModal');
     const ctaBtn    = document.getElementById('ctaOpen');
     const closeBtn  = document.getElementById('modalClose');
     const form      = document.getElementById('regForm');
     const successEl = document.getElementById('modalSuccess');
     const formEl    = document.getElementById('modalForm');
+    const submitBtn = form?.querySelector('.modal-submit');
 
     function openModal(){ modal.classList.add('open'); }
     function closeModal(){ modal.classList.remove('open'); }
@@ -963,7 +998,7 @@
     if(closeBtn) closeBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
 
-    // If already unlocked, clicking CTA scrolls to content
+    // Already unlocked: CTA scrolls down
     if(existingUser){
         ctaBtn && ctaBtn.addEventListener('click', e => {
             e.stopImmediatePropagation();
@@ -971,7 +1006,7 @@
         }, true);
     }
 
-    form && form.addEventListener('submit', e => {
+    form && form.addEventListener('submit', async e => {
         e.preventDefault();
         const name    = document.getElementById('f_name').value.trim();
         const email   = document.getElementById('f_email').value.trim();
@@ -980,9 +1015,28 @@
 
         if(!name || !email){ alert('Nome e email obbligatori.'); return; }
 
-        const lead = registerLead({ name, email, company, role });
+        if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Accesso in corso...'; }
 
-        // Show success
+        const payload = { name, email, company, role };
+        let lead;
+
+        if(SB_ON){
+            try {
+                lead = await sbUpsertLead({ ...payload, views: 1 });
+                // normalize field names
+                lead.lastViewAt   = lead.last_view_at;
+                lead.registeredAt = lead.registered_at;
+            } catch(err){
+                console.warn('Supabase error, using localStorage fallback:', err);
+                lead = localUpsert(payload);
+            }
+        } else {
+            lead = localUpsert(payload);
+        }
+
+        saveUser(lead);
+
+        // Success animation
         formEl.style.display = 'none';
         successEl.style.display = 'block';
 
@@ -991,8 +1045,9 @@
             unlock();
             formEl.style.display = '';
             successEl.style.display = 'none';
+            if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Accedi alla presentazione →'; }
             document.getElementById('problema')?.scrollIntoView({behavior:'smooth', block:'start'});
-        }, 1800);
+        }, 1600);
     });
 })();
 </script>
