@@ -133,10 +133,51 @@
             .stats{gap:1.2rem}
             .impact{flex-direction:column;gap:0.5rem}
             .advisors{flex-direction:column;align-items:center}
+            .slide-nav{display:none}
         }
+
+        /* Slide Nav */
+        .slide-nav{
+            position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
+            z-index:200;display:flex;flex-direction:column;align-items:center;gap:0.35rem
+        }
+        .slide-nav-item{
+            display:flex;align-items:center;gap:0.5rem;cursor:pointer;
+            padding:0.15rem 0;text-decoration:none
+        }
+        .slide-nav-item .dot{
+            width:8px;height:8px;border-radius:50%;
+            background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.25);
+            transition:all 0.25s;flex-shrink:0
+        }
+        .slide-nav-item .pg{
+            font-family:'Space Grotesk';font-size:0.6rem;font-weight:700;
+            color:rgba(255,255,255,0.2);transition:all 0.25s;
+            white-space:nowrap;text-align:right;min-width:1.2rem
+        }
+        .slide-nav-item:hover .dot{background:rgba(255,255,255,0.5);transform:scale(1.3)}
+        .slide-nav-item:hover .pg{color:rgba(255,255,255,0.6)}
+        .slide-nav-item.active .dot{
+            background:var(--purple);border-color:var(--cyan);
+            box-shadow:0 0 8px rgba(122,0,223,0.6);transform:scale(1.4)
+        }
+        .slide-nav-item.active .pg{color:var(--white)}
+
+        /* Page counter */
+        .page-counter{
+            position:fixed;bottom:1.2rem;right:1.8rem;z-index:200;
+            font-family:'Space Grotesk';font-size:0.7rem;font-weight:700;
+            color:rgba(255,255,255,0.3);letter-spacing:1px;
+            transition:color 0.3s
+        }
+        .page-counter span{color:var(--white)}
     </style>
 </head>
 <body>
+
+<!-- Side slide navigation -->
+<nav class="slide-nav" id="slideNav" aria-label="Navigazione slide"></nav>
+<div class="page-counter" id="pageCounter"><span id="curPage">1</span> / <span id="totPages">12</span></div>
 
 <nav>
     <div class="logo"><img src="img/logo-metacasa-inv.svg" alt="MetaCasa" style="height:30px" onerror="this.outerHTML='META<b>CASA</b>'"></div>
@@ -144,7 +185,7 @@
 </nav>
 
 <!-- ===== 1. HERO ===== -->
-<section class="hero">
+<section class="hero" id="hero">
     <div class="badge">⚡ Seed Round Aperto — Target €1M</div>
     <h1>Le agenzie immobiliari perdono tempo.<br><span class="grad">Noi glielo restituiamo.</span></h1>
     <p>MetaCasa automatizza il 90% del lavoro operativo dell'agenzia immobiliare. Dall'incarico al rogito. L'agente torna a fare l'agente.</p>
@@ -300,7 +341,7 @@
 <div class="divider"></div>
 
 <!-- ===== 5. TECNOLOGIA PROPRIETARIA ===== -->
-<section>
+<section id="tecnologia">
     <div class="label">Tecnologia Proprietaria</div>
     <h2 class="title">Da planimetria catastale a<br><span class="grad">asset digitale in minuti.</span></h2>
     <p class="sub">Modello AI proprietario per l'elaborazione automatica delle planimetrie. Da documento grezzo a output professionale, senza intervento umano.</p>
@@ -342,7 +383,7 @@
 <div class="divider"></div>
 
 <!-- ===== 5b. PRIMA / DOPO ===== -->
-<section>
+<section id="risultato">
     <div class="label">Il Risultato</div>
     <h2 class="title">Da foto grezza a<br><span class="grad">materiale professionale.</span></h2>
     <p class="sub">Un click sostituisce 12 servizi separati, integrazioni e abbonamenti diversi.</p>
@@ -364,7 +405,7 @@
 <div class="divider"></div>
 
 <!-- ===== 6. TRACTION ===== -->
-<section>
+<section id="traction">
     <div class="label">Proven Results</div>
     <h2 class="title">Crescita validata<br><span class="grad">dal mercato.</span></h2>
 
@@ -512,7 +553,7 @@
 <div class="divider"></div>
 
 <!-- ===== 9. MARKET SIZE ===== -->
-<section>
+<section id="market">
     <div class="label">Mercato Software Immobiliare</div>
     <h2 class="title">Il mercato degli strumenti.<br><span class="grad">Solo software, dati reali.</span></h2>
 
@@ -549,7 +590,7 @@
 <div class="divider"></div>
 
 <!-- ===== 10. ROADMAP ===== -->
-<section>
+<section id="roadmap">
     <div class="label">Roadmap</div>
     <h2 class="title">Da €1M a €9.5M ARR.<br><span class="grad">CAGR ~119%.</span></h2>
 
@@ -629,6 +670,87 @@
     <p>MetaCasa &copy; 2026 — Il Sistema Operativo per il Real Estate.</p>
     <p style="margin-top:0.3rem"><a href="https://metacasa.ai">metacasa.ai</a></p>
 </footer>
+
+<script>
+(function(){
+    const SLIDES = [
+        {id:'hero',     label:'Intro'},
+        {id:'problema', label:'Problema'},
+        {id:'soluzione',label:'Soluzione'},
+        {id:'workflow', label:'Workflow'},
+        {id:'tecnologia',label:'Tecnologia'},
+        {id:'risultato',label:'Risultato'},
+        {id:'traction', label:'Traction'},
+        {id:'competitor',label:'Posizionamento'},
+        {id:'numeri',   label:'Pricing'},
+        {id:'market',   label:'Mercato'},
+        {id:'roadmap',  label:'Roadmap'},
+        {id:'team',     label:'Team'},
+        {id:'ask',      label:'Invest'}
+    ];
+
+    const nav    = document.getElementById('slideNav');
+    const curEl  = document.getElementById('curPage');
+    const totEl  = document.getElementById('totPages');
+
+    // Filter only sections that actually exist in DOM
+    const slides = SLIDES.filter(s => document.getElementById(s.id));
+    totEl.textContent = slides.length;
+
+    // Build nav dots
+    slides.forEach((s, i) => {
+        const a = document.createElement('a');
+        a.href = '#' + s.id;
+        a.className = 'slide-nav-item';
+        a.setAttribute('aria-label', s.label);
+        a.title = s.label;
+        a.innerHTML = `<span class="pg">${i+1}</span><span class="dot"></span>`;
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            document.getElementById(s.id).scrollIntoView({behavior:'smooth', block:'start'});
+        });
+        nav.appendChild(a);
+    });
+
+    const items = Array.from(nav.querySelectorAll('.slide-nav-item'));
+
+    function setActive(idx) {
+        items.forEach((el, i) => el.classList.toggle('active', i === idx));
+        curEl.textContent = idx + 1;
+    }
+
+    // IntersectionObserver: track which slide is most visible
+    let activeIdx = 0;
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const idx = slides.findIndex(s => s.id === entry.target.id);
+                if (idx !== -1) { activeIdx = idx; setActive(idx); }
+            }
+        });
+    }, {threshold: 0.3});
+
+    slides.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (el) io.observe(el);
+    });
+
+    // Keyboard navigation (arrow keys)
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const next = Math.min(activeIdx + 1, slides.length - 1);
+            document.getElementById(slides[next].id).scrollIntoView({behavior:'smooth', block:'start'});
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const prev = Math.max(activeIdx - 1, 0);
+            document.getElementById(slides[prev].id).scrollIntoView({behavior:'smooth', block:'start'});
+        }
+    });
+
+    setActive(0);
+})();
+</script>
 
 </body>
 </html>
