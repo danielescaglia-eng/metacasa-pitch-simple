@@ -144,6 +144,70 @@
             .orch-bar{flex-direction:column;align-items:flex-start}
         }
 
+        /* ===== GATE SYSTEM ===== */
+        .gated-content{transition:opacity 0.6s,filter 0.6s}
+        body.content-locked .gated-content{
+            filter:blur(8px);pointer-events:none;user-select:none;opacity:0.25;
+        }
+        body.content-locked .slide-nav,
+        body.content-locked .page-counter{opacity:0;pointer-events:none}
+
+        /* Gate CTA hero override */
+        .cta-btn-gate{
+            display:inline-block;margin-top:1.8rem;background:var(--grad);color:white;
+            padding:0.85rem 2rem;border-radius:12px;text-decoration:none;font-weight:700;
+            font-size:1rem;font-family:'Space Grotesk';box-shadow:0 6px 30px rgba(122,0,223,0.3);
+            position:relative;z-index:1;transition:transform 0.2s;cursor:pointer;border:none;
+        }
+        .cta-btn-gate:hover{transform:translateY(-2px)}
+
+        /* Seed Round text badge */
+        .seed-label{
+            font-family:'Space Grotesk';font-size:0.7rem;font-weight:700;
+            color:var(--purple);border:1px solid rgba(122,0,223,0.3);
+            padding:0.3rem 0.8rem;border-radius:6px;letter-spacing:0.5px;
+        }
+
+        /* Modal */
+        .modal-overlay{
+            position:fixed;inset:0;z-index:1000;background:rgba(10,10,20,0.85);
+            backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;
+            opacity:0;pointer-events:none;transition:opacity 0.3s;
+        }
+        .modal-overlay.open{opacity:1;pointer-events:all}
+        .modal-box{
+            background:#14142a;border:1px solid rgba(122,0,223,0.3);border-radius:20px;
+            padding:2.5rem;max-width:440px;width:90%;position:relative;
+            box-shadow:0 20px 80px rgba(122,0,223,0.2);
+        }
+        .modal-box h2{font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;margin-bottom:0.4rem}
+        .modal-box p{font-size:0.85rem;color:var(--gray);margin-bottom:1.5rem}
+        .modal-field{margin-bottom:1rem}
+        .modal-field label{display:block;font-size:0.72rem;font-weight:600;color:var(--muted);margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:1px}
+        .modal-field input,.modal-field select{
+            width:100%;background:#1a1a30;border:1px solid rgba(255,255,255,0.1);
+            border-radius:8px;padding:0.65rem 0.9rem;color:var(--white);font-size:0.88rem;
+            font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;
+        }
+        .modal-field input:focus,.modal-field select:focus{border-color:var(--purple)}
+        .modal-field select option{background:#1a1a30}
+        .modal-submit{
+            width:100%;padding:0.85rem;background:var(--grad);border:none;border-radius:10px;
+            color:white;font-weight:700;font-size:0.95rem;font-family:'Space Grotesk';
+            cursor:pointer;margin-top:0.5rem;transition:opacity 0.2s;
+        }
+        .modal-submit:hover{opacity:0.9}
+        .modal-close{
+            position:absolute;top:1rem;right:1.2rem;background:none;border:none;
+            color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1;
+        }
+        .modal-close:hover{color:var(--white)}
+        .modal-note{font-size:0.68rem;color:var(--muted);text-align:center;margin-top:0.8rem}
+        .modal-success{text-align:center;padding:1rem 0;display:none}
+        .modal-success .check{font-size:2.5rem;margin-bottom:0.5rem}
+        .modal-success h3{font-family:'Space Grotesk';font-size:1.1rem;margin-bottom:0.4rem}
+        .modal-success p{font-size:0.85rem;color:var(--gray)}
+
         /* Slide Nav */
         .slide-nav{
             position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
@@ -172,16 +236,63 @@
     <div class="logo"><img src="img/logo-metacasa-inv.svg" alt="MetaCasa" style="height:30px" onerror="this.outerHTML='META<b>CASA</b>'"></div>
     <div style="display:flex;align-items:center;gap:1rem">
         <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Grotesk'">Agentic OS v2</span>
-        <a href="#ask" class="cta">Seed Round →</a>
+        <span class="seed-label">⚡ Seed Round — €1M</span>
     </div>
 </nav>
+
+<!-- ===== REGISTRATION MODAL ===== -->
+<div class="modal-overlay" id="regModal">
+    <div class="modal-box">
+        <button class="modal-close" id="modalClose">✕</button>
+
+        <div id="modalForm">
+            <div style="display:inline-block;background:rgba(122,0,223,0.1);border:1px solid rgba(122,0,223,0.2);border-radius:6px;padding:0.2rem 0.6rem;font-size:0.65rem;font-weight:700;color:var(--purple);font-family:'Space Grotesk';margin-bottom:1rem">⬡ ACCESSO RISERVATO</div>
+            <h2>Entra nel pitch<br><span class="grad">MetaCasa.</span></h2>
+            <p>Lascia i tuoi dati per accedere alla presentazione completa e ai materiali per investitori.</p>
+
+            <form id="regForm" novalidate>
+                <div class="modal-field">
+                    <label>Nome e Cognome</label>
+                    <input type="text" id="f_name" placeholder="Marco Rossi" required>
+                </div>
+                <div class="modal-field">
+                    <label>Email</label>
+                    <input type="email" id="f_email" placeholder="marco@fund.vc" required>
+                </div>
+                <div class="modal-field">
+                    <label>Azienda / Fondo</label>
+                    <input type="text" id="f_company" placeholder="Acme Ventures">
+                </div>
+                <div class="modal-field">
+                    <label>Ruolo</label>
+                    <select id="f_role">
+                        <option value="">Seleziona...</option>
+                        <option value="investor">Investitore / VC</option>
+                        <option value="angel">Business Angel</option>
+                        <option value="partner">Partner Strategico</option>
+                        <option value="advisor">Advisor</option>
+                        <option value="other">Altro</option>
+                    </select>
+                </div>
+                <button type="submit" class="modal-submit">Accedi alla presentazione →</button>
+                <p class="modal-note">I dati non vengono condivisi con terze parti.</p>
+            </form>
+        </div>
+
+        <div class="modal-success" id="modalSuccess">
+            <div class="check">✅</div>
+            <h3>Accesso garantito!</h3>
+            <p>Benvenuto nel pitch MetaCasa.<br>Scorri per scoprire la piattaforma.</p>
+        </div>
+    </div>
+</div>
 
 <!-- ===== 1. HERO ===== -->
 <section class="hero" id="hero">
     <div class="badge">⬡ Agentic Real Estate OS — Seed Round Aperto €1M</div>
     <h1>Il primo <span class="grad">OS agentico</span><br>per l'immobiliare italiano.</h1>
     <p>MetaCasa non è un tool. È un sistema di agenti AI specializzati che eseguono autonomamente il 90% del lavoro operativo di un'agenzia — dall'incarico al rogito.</p>
-    <a href="#agenti" class="cta-btn">Scopri gli agenti →</a>
+    <button class="cta-btn-gate" id="ctaOpen">Scopri MetaCasa →</button>
     <div class="stats">
         <div class="stat"><div class="n">€500k+</div><div class="l">Ricavi annui</div></div>
         <div class="stat"><div class="n">1.000+</div><div class="l">Agenzie clienti</div></div>
@@ -189,6 +300,9 @@
         <div class="stat"><div class="n">4x</div><div class="l">Crescita anno</div></div>
     </div>
 </section>
+
+<!-- ===== GATED CONTENT START ===== -->
+<div class="gated-content" id="pitchContent">
 
 <div class="divider"></div>
 
@@ -690,6 +804,9 @@
     </div>
 </section>
 
+</div>
+<!-- ===== GATED CONTENT END ===== -->
+
 <footer>
     <p>MetaCasa &copy; 2026 — L'OS Agentico per il Real Estate. <span style="color:var(--purple)">v2</span></p>
     <p style="margin-top:0.3rem"><a href="https://metacasa.ai">metacasa.ai</a></p>
@@ -770,6 +887,113 @@
     });
 
     setActive(0);
+})();
+</script>
+
+<script>
+// ===== GATE & CRM SYSTEM =====
+(function(){
+    const LEADS_KEY = 'mc_leads';
+    const USER_KEY  = 'mc_user';
+
+    function getLeads(){ try{ return JSON.parse(localStorage.getItem(LEADS_KEY))||[]; }catch{ return []; } }
+    function saveLeads(l){ localStorage.setItem(LEADS_KEY, JSON.stringify(l)); }
+    function getUser(){  try{ return JSON.parse(localStorage.getItem(USER_KEY)); }catch{ return null; } }
+    function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
+
+    function registerLead(data){
+        const leads = getLeads();
+        const now   = new Date().toISOString();
+        let lead = leads.find(l => l.email.toLowerCase() === data.email.toLowerCase());
+        if(lead){
+            lead.views = (lead.views||0) + 1;
+            lead.lastViewAt = now;
+        } else {
+            lead = { id: Date.now(), ...data, registeredAt: now, views: 1, lastViewAt: now };
+            leads.push(lead);
+        }
+        saveLeads(leads);
+        saveUser(lead);
+        return lead;
+    }
+
+    function trackView(){
+        const user = getUser();
+        if(!user) return;
+        const leads = getLeads();
+        const lead  = leads.find(l => l.id === user.id);
+        if(lead){
+            lead.views = (lead.views||0) + 1;
+            lead.lastViewAt = new Date().toISOString();
+            saveLeads(leads);
+            saveUser(lead);
+        }
+    }
+
+    function unlock(){
+        document.body.classList.remove('content-locked');
+        document.getElementById('pitchContent').style.display = '';
+    }
+
+    function lock(){
+        document.body.classList.add('content-locked');
+    }
+
+    // On load — check if already registered
+    const existingUser = getUser();
+    if(existingUser && existingUser.email){
+        trackView();
+        unlock();
+    } else {
+        lock();
+    }
+
+    // Modal logic
+    const modal     = document.getElementById('regModal');
+    const ctaBtn    = document.getElementById('ctaOpen');
+    const closeBtn  = document.getElementById('modalClose');
+    const form      = document.getElementById('regForm');
+    const successEl = document.getElementById('modalSuccess');
+    const formEl    = document.getElementById('modalForm');
+
+    function openModal(){ modal.classList.add('open'); }
+    function closeModal(){ modal.classList.remove('open'); }
+
+    if(ctaBtn)   ctaBtn.addEventListener('click', openModal);
+    if(closeBtn) closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+
+    // If already unlocked, clicking CTA scrolls to content
+    if(existingUser){
+        ctaBtn && ctaBtn.addEventListener('click', e => {
+            e.stopImmediatePropagation();
+            document.getElementById('problema')?.scrollIntoView({behavior:'smooth', block:'start'});
+        }, true);
+    }
+
+    form && form.addEventListener('submit', e => {
+        e.preventDefault();
+        const name    = document.getElementById('f_name').value.trim();
+        const email   = document.getElementById('f_email').value.trim();
+        const company = document.getElementById('f_company').value.trim();
+        const role    = document.getElementById('f_role').value;
+
+        if(!name || !email){ alert('Nome e email obbligatori.'); return; }
+
+        const lead = registerLead({ name, email, company, role });
+
+        // Show success
+        formEl.style.display = 'none';
+        successEl.style.display = 'block';
+
+        setTimeout(() => {
+            closeModal();
+            unlock();
+            formEl.style.display = '';
+            successEl.style.display = 'none';
+            document.getElementById('problema')?.scrollIntoView({behavior:'smooth', block:'start'});
+        }, 1800);
+    });
 })();
 </script>
 
