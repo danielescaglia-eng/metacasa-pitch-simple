@@ -235,6 +235,7 @@
 <nav>
     <div class="logo"><img src="img/logo-metacasa-inv.svg" alt="MetaCasa" style="height:30px" onerror="this.outerHTML='META<b>CASA</b>'"></div>
     <div style="display:flex;align-items:center;gap:1rem">
+        <span id="userGreeting" style="display:none;font-size:0.75rem;font-family:'Space Grotesk';color:var(--white);font-weight:600"></span>
         <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Grotesk'">Agentic OS v2</span>
         <span class="seed-label">⚡ Seed Round — €1M</span>
     </div>
@@ -964,6 +965,15 @@
         return lead;
     }
 
+    // ── GREETING ──
+    function showGreeting(name){
+        const el = document.getElementById('userGreeting');
+        if(!el || !name) return;
+        const first = name.trim().split(' ')[0];
+        el.textContent = '👋 Ciao, ' + first;
+        el.style.display = 'inline';
+    }
+
     // ── GATE UI ──
     function unlock(){
         document.body.classList.remove('content-locked');
@@ -977,6 +987,7 @@
         // Known user on this device — track view silently
         if(SB_ON){ sbIncrementView(existingUser.email).catch(()=>{}); }
         else { localUpsert(existingUser); }
+        showGreeting(existingUser.name);
         unlock();
     } else {
         lock();
@@ -1035,6 +1046,7 @@
         }
 
         saveUser(lead);
+        showGreeting(lead.name);
 
         // Success animation
         formEl.style.display = 'none';
