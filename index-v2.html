@@ -241,6 +241,52 @@
             .modal-close{top:0.8rem;right:0.8rem}
         }
 
+        /* ===== SCROLL GATE — centro pagina ===== */
+        .scroll-gate{
+            position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.92);
+            z-index:600;width:min(420px,92vw);
+            background:#13132a;border:1px solid rgba(122,0,223,0.4);border-radius:20px;
+            padding:2rem 2rem 1.6rem;
+            box-shadow:0 0 0 9999px rgba(5,5,18,0.6),0 24px 80px rgba(122,0,223,0.3);
+            opacity:0;pointer-events:none;
+            transition:opacity 0.35s,transform 0.35s cubic-bezier(0.16,1,0.3,1);
+        }
+        .scroll-gate.show{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1)}
+        .scroll-gate-icon{font-size:2rem;margin-bottom:0.6rem;display:block;text-align:center}
+        .scroll-gate h3{
+            font-family:'Space Grotesk';font-size:1.25rem;font-weight:800;
+            text-align:center;margin-bottom:0.3rem
+        }
+        .scroll-gate .sg-sub{
+            font-size:0.82rem;color:var(--gray);text-align:center;
+            margin-bottom:1.4rem;line-height:1.5
+        }
+        .scroll-gate .modal-field{margin-bottom:0.75rem}
+        .scroll-gate .modal-field label{color:rgba(255,255,255,0.6);font-size:0.68rem}
+        .scroll-gate .modal-field input,
+        .scroll-gate .modal-field select{
+            background:#1e1e3a;border:1.5px solid rgba(122,0,223,0.25);
+            border-radius:9px;padding:0.7rem 0.9rem;
+            color:#fff;font-size:0.9rem;font-family:'Inter',sans-serif;
+            width:100%;outline:none;transition:border-color 0.2s;box-sizing:border-box;
+        }
+        .scroll-gate .modal-field input::placeholder{color:rgba(255,255,255,0.38)}
+        .scroll-gate .modal-field input:focus,
+        .scroll-gate .modal-field select:focus{border-color:var(--purple);background:#24244a}
+        .scroll-gate .modal-field select{color:rgba(255,255,255,0.7)}
+        .scroll-gate .modal-field select option{background:#1e1e3a;color:#fff}
+        .scroll-gate-btn{
+            width:100%;padding:0.85rem;background:var(--grad);border:none;border-radius:10px;
+            color:white;font-weight:700;font-size:0.95rem;font-family:'Space Grotesk';
+            cursor:pointer;margin-top:0.4rem;transition:opacity 0.2s;letter-spacing:0.3px;
+        }
+        .scroll-gate-btn:hover{opacity:0.9}
+        .scroll-gate-note{font-size:0.65rem;color:var(--muted);text-align:center;margin-top:0.6rem}
+        @media(max-width:600px){
+            .scroll-gate{width:92vw;padding:1.6rem 1.2rem 1.6rem}
+            .scroll-gate .modal-field input,.scroll-gate .modal-field select{font-size:16px}
+        }
+
         /* Slide Nav */
         .slide-nav{
             position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
@@ -353,6 +399,40 @@
             <p>Benvenuto nel pitch MetaCasa.<br>Scorri per scoprire la piattaforma.</p>
         </div>
     </div>
+</div>
+
+<!-- ===== SCROLL GATE BOX ===== -->
+<div class="scroll-gate" id="scrollGate">
+    <span class="scroll-gate-icon">🔒</span>
+    <h3>Accedi al pitch <span class="grad">MetaCasa</span></h3>
+    <p class="sg-sub">Lascia i tuoi dati per sbloccare tutte le slide e i materiali per investitori.</p>
+    <form id="sgForm" novalidate>
+        <div class="modal-field">
+            <label>Nome e Cognome</label>
+            <input type="text" id="sg_name" placeholder="Marco Rossi" required>
+        </div>
+        <div class="modal-field">
+            <label>Email</label>
+            <input type="email" id="sg_email" placeholder="marco@fund.vc" required>
+        </div>
+        <div class="modal-field">
+            <label>Azienda / Fondo</label>
+            <input type="text" id="sg_company" placeholder="Acme Ventures">
+        </div>
+        <div class="modal-field">
+            <label>Ruolo</label>
+            <select id="sg_role">
+                <option value="">Seleziona...</option>
+                <option value="investor">Investitore / VC</option>
+                <option value="angel">Business Angel</option>
+                <option value="partner">Partner Strategico</option>
+                <option value="advisor">Advisor</option>
+                <option value="other">Altro</option>
+            </select>
+        </div>
+        <button type="submit" class="scroll-gate-btn" id="sgSubmitBtn">Sblocca il pitch →</button>
+        <p class="scroll-gate-note">I dati non vengono condivisi con terze parti.</p>
+    </form>
 </div>
 
 <!-- ===== 1. HERO ===== -->
@@ -1055,7 +1135,7 @@
         return lead;
     }
 
-    // ── SCROLL NUDGE ──
+    // ── SCROLL NUDGE (bottom bar) ──
     const nudge = document.getElementById('scrollNudge');
     let nudgeHidden = false;
     function updateNudge(){
@@ -1066,6 +1146,49 @@
     window.addEventListener('scroll', updateNudge, {passive:true});
     nudge && nudge.addEventListener('click', () => { const m = document.getElementById('regModal'); if(m) m.classList.add('open'); });
     function hideNudge(){ nudgeHidden=true; nudge.classList.remove('visible'); }
+
+    // ── SCROLL GATE (centro pagina) ──
+    const sg      = document.getElementById('scrollGate');
+    const sgForm  = document.getElementById('sgForm');
+    const sgBtn   = document.getElementById('sgSubmitBtn');
+    let sgShown   = false;
+
+    function showScrollGate(){
+        if(sgShown || !document.body.classList.contains('content-locked')) return;
+        sgShown = true;
+        sg.classList.add('show');
+    }
+    function hideScrollGate(){
+        sg.classList.remove('show');
+    }
+    window.addEventListener('scroll', () => {
+        if(window.scrollY > 200) showScrollGate();
+    }, {passive:true});
+
+    sgForm && sgForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const name    = document.getElementById('sg_name').value.trim();
+        const email   = document.getElementById('sg_email').value.trim();
+        const company = document.getElementById('sg_company').value.trim();
+        const role    = document.getElementById('sg_role').value;
+        if(!name || !email){ alert('Nome e email obbligatori.'); return; }
+        if(sgBtn){ sgBtn.disabled = true; sgBtn.textContent = 'Accesso in corso...'; }
+        const payload = { name, email, company, role };
+        let lead;
+        if(SB_ON){
+            try { lead = await sbUpsertLead({ ...payload, views:1 }); }
+            catch(err){ lead = localUpsert(payload); }
+        } else { lead = localUpsert(payload); }
+        saveUser(lead);
+        showGreeting(lead.name);
+        hideScrollGate();
+        unlock();
+        // Also sync the modal form fields in case it was opened
+        const fn = document.getElementById('f_name');
+        const fe = document.getElementById('f_email');
+        if(fn) fn.value = name;
+        if(fe) fe.value = email;
+    });
 
     // ── GREETING ──
     function showGreeting(name){
@@ -1081,6 +1204,7 @@
         document.body.classList.remove('content-locked');
         document.getElementById('pitchContent').style.display = '';
         hideNudge();
+        hideScrollGate();
         const hint = document.getElementById('ctaHint');
         if(hint) hint.style.display = 'none';
         const btn = document.getElementById('ctaOpen');
