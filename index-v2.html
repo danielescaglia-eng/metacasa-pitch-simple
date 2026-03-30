@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaCasa v2 — L'OS Agentico per il Real Estate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--purple:#7A00DF;--cyan:#06B6D4;--dark:#0F0F1A;--card:#161625;--card-hover:#1e1e35;--white:#f0f0f5;--gray:#ABB8C3;--muted:#6b6b80;--green:#00D084;--red:#ef4444;--grad:linear-gradient(135deg,#7A00DF,#06B6D4);--border:rgba(122,0,223,0.12)}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--white);line-height:1.6;overflow-x:hidden}
+        h1,h2,h3{font-family:'Space Grotesk',sans-serif}
+        .grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+        /* Nav */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0.8rem 2rem;background:rgba(15,15,26,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .logo{font-family:'Space Grotesk';font-size:1.3rem;font-weight:800}
+        nav a.cta{background:var(--grad);color:white;padding:0.4rem 1rem;border-radius:8px;text-decoration:none;font-size:0.8rem;font-weight:600;font-family:'Space Grotesk'}
+
+        /* Sections */
+        section{max-width:1100px;margin:0 auto;padding:5rem 2rem}
+        .label{font-family:'Space Grotesk';text-transform:uppercase;font-size:0.7rem;font-weight:700;letter-spacing:3px;color:var(--cyan);margin-bottom:0.6rem}
+        .title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-0.5px;margin-bottom:1rem}
+        .sub{font-size:1rem;color:var(--gray);max-width:650px;line-height:1.7}
+        .divider{max-width:1100px;margin:0 auto;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+
+        /* Hero */
+        .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding-top:4rem;position:relative;overflow:hidden}
+        .hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(122,0,223,0.18),transparent 70%);filter:blur(60px)}
+        .hero h1{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:800;line-height:1.08;letter-spacing:-1.5px;max-width:820px;position:relative;z-index:1}
+        .hero p{font-size:1.1rem;color:var(--gray);max-width:580px;margin:1rem auto 0;position:relative;z-index:1}
+        .hero .badge{display:inline-block;background:rgba(122,0,223,0.12);border:1px solid rgba(122,0,223,0.35);padding:0.3rem 0.9rem;border-radius:100px;font-size:0.75rem;font-weight:600;color:var(--purple);margin-bottom:1.5rem;font-family:'Space Grotesk';position:relative;z-index:1}
+        .hero .cta-btn{display:inline-block;margin-top:1.8rem;background:var(--grad);color:white;padding:0.85rem 2rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1rem;font-family:'Space Grotesk';box-shadow:0 6px 30px rgba(122,0,223,0.3);position:relative;z-index:1;transition:transform 0.2s}
+        .hero .cta-btn:hover{transform:translateY(-2px)}
+
+        .stats{display:flex;gap:2.5rem;justify-content:center;flex-wrap:wrap;margin-top:2.5rem;position:relative;z-index:1}
+        .stat .n{font-family:'Space Grotesk';font-size:2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .stat .l{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:0.2rem}
+
+        /* Cards grid */
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem}
+        .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:2rem}
+        .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem}
+        .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-top:2rem}
+
+        .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.8rem;transition:all 0.3s}
+        .card:hover{border-color:rgba(122,0,223,0.3);transform:translateY(-2px)}
+        .card .icon{font-size:1.8rem;margin-bottom:0.8rem}
+        .card h3{font-size:1rem;font-weight:700;margin-bottom:0.4rem}
+        .card p{font-size:0.85rem;color:var(--gray);line-height:1.5}
+        .card .big{font-family:'Space Grotesk';font-size:1.8rem;font-weight:800;margin-bottom:0.3rem}
+        .card .big.red{color:var(--red)}
+        .card .big.green{color:var(--green)}
+
+        /* Agent badge */
+        .agent-badge{display:inline-flex;align-items:center;gap:0.3rem;background:rgba(122,0,223,0.12);border:1px solid rgba(122,0,223,0.25);border-radius:5px;padding:0.15rem 0.5rem;font-size:0.6rem;font-weight:700;color:var(--purple);font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:0.5px}
+        .agent-badge::before{content:'⬡';font-size:0.55rem}
+
+        /* Agent card (5 agents section) */
+        .agent-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.4rem;position:relative;overflow:hidden;transition:all 0.3s}
+        .agent-card:hover{border-color:rgba(122,0,223,0.4);transform:translateY(-3px);box-shadow:0 8px 30px rgba(122,0,223,0.15)}
+        .agent-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(122,0,223,0.08),transparent 70%)}
+        .agent-num{font-family:'Space Grotesk';font-size:0.55rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.5rem}
+        .agent-icon{font-size:1.6rem;margin-bottom:0.6rem}
+        .agent-name{font-family:'Space Grotesk';font-size:0.85rem;font-weight:800;color:var(--white);margin-bottom:0.3rem}
+        .agent-task{font-size:0.72rem;color:var(--muted);line-height:1.5;margin-bottom:0.7rem}
+        .agent-output{font-size:0.65rem;color:var(--cyan);font-weight:600;font-family:'Space Grotesk'}
+
+        /* Orchestrator bar */
+        .orch-bar{background:linear-gradient(135deg,rgba(122,0,223,0.1),rgba(6,182,212,0.05));border:1px solid rgba(122,0,223,0.2);border-radius:12px;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+        .orch-bar .orch-label{font-family:'Space Grotesk';font-size:0.75rem;font-weight:800;color:var(--white)}
+        .orch-bar .orch-desc{font-size:0.72rem;color:var(--gray)}
+        .orch-pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(0,208,132,0.6);animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.3)}}
+
+        /* Workflow */
+        .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem}
+        .ba-box{border-radius:14px;overflow:hidden;border:1px solid var(--border);position:relative}
+        .ba-box img{width:100%;height:280px;object-fit:cover;display:block}
+        .ba-tag{position:absolute;bottom:10px;left:10px;background:rgba(15,15,26,0.85);backdrop-filter:blur(10px);padding:0.25rem 0.7rem;border-radius:8px;font-size:0.7rem;font-weight:600;font-family:'Space Grotesk'}
+        .ba-tag.before{color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+        .ba-tag.after{color:var(--green);border:1px solid rgba(0,208,132,0.2)}
+
+        /* Impact bar */
+        .impact{display:flex;align-items:center;justify-content:center;gap:2rem;margin-top:2rem;padding:1.2rem;background:var(--card);border-radius:12px;border:1px solid var(--border)}
+        .impact .imp-val{font-family:'Space Grotesk';font-size:1.6rem;font-weight:800;color:var(--green)}
+        .impact .imp-txt{font-size:0.8rem;color:var(--gray)}
+
+        /* Pricing */
+        .price-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0.8rem;margin-top:2rem}
+        .price-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;text-align:center}
+        .price-box.pop{border-color:var(--purple);background:linear-gradient(135deg,rgba(122,0,223,0.08),var(--card))}
+        .price-box .tier{font-family:'Space Grotesk';font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gray)}
+        .price-box .amt{font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;margin:0.3rem 0}
+        .price-box .amt span{font-size:0.65rem;font-weight:400;color:var(--muted)}
+        .price-box .feat{font-size:0.68rem;color:var(--muted);line-height:1.5}
+
+        /* TAM */
+        .tam-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2rem}
+        .tam-card{text-align:center;padding:2rem}
+        .tam-val{font-family:'Space Grotesk';font-size:2.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .tam-name{font-family:'Space Grotesk';font-size:0.85rem;font-weight:700;margin:0.3rem 0}
+        .tam-desc{font-size:0.78rem;color:var(--gray)}
+
+        /* Roadmap */
+        .road-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem}
+        .road-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;text-align:center}
+        .road-box:last-child{border-color:var(--purple);background:linear-gradient(135deg,rgba(122,0,223,0.1),var(--card))}
+        .road-yr{font-family:'Space Grotesk';font-size:1.5rem;font-weight:800;color:var(--gray)}
+        .road-arr{font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0.3rem 0}
+        .road-items{font-size:0.72rem;color:var(--muted);line-height:1.8;text-align:left;padding-left:0.5rem}
+
+        /* Team */
+        .team-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2rem}
+        .team-card{text-align:center;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem}
+        .team-photo{width:80px;height:80px;border-radius:50%;margin:0 auto 0.8rem;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:white;font-family:'Space Grotesk';overflow:hidden;border:3px solid rgba(122,0,223,0.3)}
+        .team-photo img{width:100%;height:100%;object-fit:cover}
+        .team-card .role{font-size:0.72rem;color:var(--cyan);font-weight:600;margin-bottom:0.3rem}
+        .team-card h3{font-size:1rem;font-weight:700}
+        .team-card p{font-size:0.78rem;color:var(--gray);margin-top:0.3rem}
+        .advisors{display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap}
+        .adv{text-align:center}
+        .adv-pic{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--border);margin:0 auto 0.3rem;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--purple);font-family:'Space Grotesk';overflow:hidden}
+        .adv-pic img{width:100%;height:100%;object-fit:cover}
+        .adv .name{font-size:0.72rem;font-weight:600}
+        .adv .title{font-size:0.6rem;color:var(--muted)}
+
+        /* CTA final */
+        .final{text-align:center;padding:6rem 2rem;position:relative}
+        .final::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:500px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(122,0,223,0.1),transparent 60%);filter:blur(40px)}
+
+        footer{text-align:center;padding:2rem;font-size:0.7rem;color:var(--muted);border-top:1px solid var(--border)}
+        footer a{color:var(--cyan);text-decoration:none}
+
+        /* Responsive */
+        @media(max-width:768px){
+            .grid-2,.grid-3,.grid-4,.grid-5,.tam-row,.road-row,.team-row,.price-row{grid-template-columns:1fr}
+            .ba-wrap{grid-template-columns:1fr}
+            .stats{gap:1.2rem}
+            .impact{flex-direction:column;gap:0.5rem}
+            .advisors{flex-direction:column;align-items:center}
+            .slide-nav{display:none}
+            .orch-bar{flex-direction:column;align-items:flex-start}
+        }
+
+        /* Slide Nav */
+        .slide-nav{
+            position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
+            z-index:200;display:flex;flex-direction:column;align-items:center;gap:0.35rem
+        }
+        .slide-nav-item{display:flex;align-items:center;gap:0.5rem;cursor:pointer;padding:0.15rem 0;text-decoration:none}
+        .slide-nav-item .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.25);transition:all 0.25s;flex-shrink:0}
+        .slide-nav-item .pg{font-family:'Space Grotesk';font-size:0.6rem;font-weight:700;color:rgba(255,255,255,0.2);transition:all 0.25s;white-space:nowrap;text-align:right;min-width:1.2rem}
+        .slide-nav-item:hover .dot{background:rgba(255,255,255,0.5);transform:scale(1.3)}
+        .slide-nav-item:hover .pg{color:rgba(255,255,255,0.6)}
+        .slide-nav-item.active .dot{background:var(--purple);border-color:var(--cyan);box-shadow:0 0 8px rgba(122,0,223,0.6);transform:scale(1.4)}
+        .slide-nav-item.active .pg{color:var(--white)}
+
+        /* Page counter */
+        .page-counter{position:fixed;bottom:1.2rem;right:1.8rem;z-index:200;font-family:'Space Grotesk';font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1px;transition:color 0.3s}
+        .page-counter span{color:var(--white)}
+    </style>
+</head>
+<body>
+
+<!-- Side slide navigation -->
+<div class="slide-nav" id="slideNav" aria-label="Navigazione slide"></div>
+<div class="page-counter" id="pageCounter"><span id="curPage">1</span> / <span id="totPages">14</span></div>
+
+<nav>
+    <div class="logo"><img src="img/logo-metacasa-inv.svg" alt="MetaCasa" style="height:30px" onerror="this.outerHTML='META<b>CASA</b>'"></div>
+    <div style="display:flex;align-items:center;gap:1rem">
+        <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Grotesk'">Agentic OS v2</span>
+        <a href="#ask" class="cta">Seed Round →</a>
+    </div>
+</nav>
+
+<!-- ===== 1. HERO ===== -->
+<section class="hero" id="hero">
+    <div class="badge">⬡ Agentic Real Estate OS — Seed Round Aperto €1M</div>
+    <h1>Il primo <span class="grad">OS agentico</span><br>per l'immobiliare italiano.</h1>
+    <p>MetaCasa non è un tool. È un sistema di agenti AI specializzati che eseguono autonomamente il 90% del lavoro operativo di un'agenzia — dall'incarico al rogito, senza intervento umano.</p>
+    <a href="#agenti" class="cta-btn">Scopri gli agenti →</a>
+    <div class="stats">
+        <div class="stat"><div class="n">€500k+</div><div class="l">Ricavi annui</div></div>
+        <div class="stat"><div class="n">1.000+</div><div class="l">Agenzie clienti</div></div>
+        <div class="stat"><div class="n">5+</div><div class="l">Agenti AI attivi</div></div>
+        <div class="stat"><div class="n">30k+</div><div class="l">Immobili gestiti</div></div>
+        <div class="stat"><div class="n">4x</div><div class="l">Crescita anno</div></div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 2. PROBLEMA ===== -->
+<section id="problema">
+    <div class="label">Il Problema</div>
+    <h2 class="title">Un agente immobiliare<br>non può fare il lavoro di <span style="color:var(--red)">10 specialisti.</span></h2>
+    <p class="sub">Eppure oggi è costretto a farlo. Fotografo, geometra, grafico, copywriter, ads manager, compliance officer — tutto sulle sue spalle. Il risultato? Tempo sprecato, qualità incoerente, vendite rallentate.</p>
+
+    <div class="grid-4" style="margin-top:2rem">
+        <div class="card"><div class="big red">15h</div><h3>Perse a settimana</h3><p>In task operativi che un agente AI potrebbe eseguire in secondi.</p></div>
+        <div class="card"><div class="big red">10+</div><h3>Fornitori da coordinare</h3><p>Fotografo, geometra, grafico, social, ads — 1 casa, 10 interlocutori.</p></div>
+        <div class="card"><div class="big red">€1.000+</div><h3>Costo per immobile</h3><p>Per preparare e promuovere un singolo immobile. Qualità casuale.</p></div>
+        <div class="card"><div class="big red">44 tool</div><h3>Frammentati</h3><p>Audit 2026: nessun tool copre più di 1-2 fasi. Zero orchestrazione.</p></div>
+    </div>
+
+    <div style="margin-top:1.5rem;padding:1rem 1.5rem;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.12);border-radius:10px">
+        <p style="font-size:0.82rem;color:var(--gray)">💡 <strong style="color:var(--white)">Il vero problema non è la mancanza di strumenti</strong> — è che nessuno li orchestra. Ogni tool è un'isola. Nessun agente AI unifica il flusso. MetaCasa è il layer di orchestrazione che mancava.</p>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 3. SOLUZIONE ===== -->
+<section id="soluzione">
+    <div class="label">La Soluzione</div>
+    <h2 class="title">Non un tool da imparare.<br><span class="grad">Una forza lavoro agentica.</span></h2>
+    <p class="sub">MetaCasa è un OS agentico: un sistema di agenti AI specializzati che percepiscono, pianificano ed eseguono in autonomia. L'agente umano parla su WhatsApp. Gli agenti AI fanno il resto.</p>
+
+    <div class="grid-3">
+        <div class="card" style="text-align:center">
+            <div class="icon">🎨</div>
+            <div style="margin-bottom:0.5rem"><span class="agent-badge">Visual Agent</span></div>
+            <h3>Contenuti Visivi</h3>
+            <p>Foto HD, virtual staging, video reel, planimetrie 3D, virtual tour — autonomamente, da foto smartphone.</p>
+        </div>
+        <div class="card" style="text-align:center">
+            <div class="icon">📣</div>
+            <div style="margin-bottom:0.5rem"><span class="agent-badge">Marketing Agent</span></div>
+            <h3>Marketing Automatico</h3>
+            <p>Annunci SEO, pubblicazione portali, campagne social ads, risposte 24/7 su WhatsApp — senza supervisione.</p>
+        </div>
+        <div class="card" style="text-align:center">
+            <div class="icon">📋</div>
+            <div style="margin-bottom:0.5rem"><span class="agent-badge">Compliance Agent</span></div>
+            <h3>Gestione Operativa</h3>
+            <p>AML automatico, analisi documenti, compliance GDPR, predisposizione rogito — agente AI esegue in loop.</p>
+        </div>
+    </div>
+
+    <div class="impact">
+        <div><span class="imp-val">€49</span><span class="imp-txt"> + fee per immobile</span></div>
+        <div style="color:var(--muted)">vs</div>
+        <div><span style="font-family:'Space Grotesk';font-size:1.6rem;font-weight:800;color:var(--red);text-decoration:line-through">€1.000+</span><span class="imp-txt"> metodo tradizionale</span></div>
+        <div><span class="imp-val">-95%</span><span class="imp-txt"> costi operativi</span></div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 4. AGENTI AI ===== -->
+<section id="agenti">
+    <div class="label">Architettura Agentica</div>
+    <h2 class="title">5 agenti specializzati.<br><span class="grad">1 orchestratore.</span></h2>
+    <p class="sub">Non un singolo modello AI monolitico, ma un sistema multi-agente dove ogni agente è esperto nella sua fase. L'orchestratore coordina, delega e mantiene lo stato dell'intero workflow.</p>
+
+    <!-- Orchestrator bar -->
+    <div class="orch-bar" style="margin-top:2rem">
+        <div style="display:flex;align-items:center;gap:0.8rem">
+            <div class="orch-pulse"></div>
+            <div>
+                <div class="orch-label">⬡ MetaCasa Orchestrator</div>
+                <div class="orch-desc">Percepisce l'input dell'agente → pianifica il task → delega all'agente corretto → aggrega i risultati</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <span style="font-size:0.65rem;background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.2);border-radius:4px;padding:0.2rem 0.5rem;color:var(--green)">Perception Loop</span>
+            <span style="font-size:0.65rem;background:rgba(122,0,223,0.08);border:1px solid rgba(122,0,223,0.2);border-radius:4px;padding:0.2rem 0.5rem;color:var(--purple)">Planning</span>
+            <span style="font-size:0.65rem;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:4px;padding:0.2rem 0.5rem;color:var(--cyan)">Execution</span>
+            <span style="font-size:0.65rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:0.2rem 0.5rem;color:var(--muted)">Memory & Learning</span>
+        </div>
+    </div>
+
+    <!-- 5 agent cards -->
+    <div class="grid-5">
+        <div class="agent-card">
+            <div class="agent-num">Agente 01</div>
+            <div class="agent-icon">🏠</div>
+            <div class="agent-name">Acquisition Agent</div>
+            <div class="agent-task">Censisce proprietari, genera CMA automatico, precompila mandato, qualifica il lead senza intervento umano.</div>
+            <div class="agent-output">→ Mandato pronto in minuti</div>
+        </div>
+        <div class="agent-card">
+            <div class="agent-num">Agente 02</div>
+            <div class="agent-icon">📋</div>
+            <div class="agent-name">Compliance Agent</div>
+            <div class="agent-task">AML automatico, verifica visure, GDPR check, data room strutturata, firma digitale. Loop continuo fino a compliance completa.</div>
+            <div class="agent-output">→ Fascicolo legale in < 1h</div>
+        </div>
+        <div class="agent-card" style="border-color:rgba(122,0,223,0.3);background:linear-gradient(135deg,rgba(122,0,223,0.06),var(--card))">
+            <div class="agent-num">Agente 03</div>
+            <div class="agent-icon">🎨</div>
+            <div class="agent-name">Visual Agent</div>
+            <div class="agent-task">Elabora foto, genera staging AI, produce video reel, ridisegna planimetrie, crea virtual tour navigabile. Da smartphone a asset pro.</div>
+            <div class="agent-output">→ Materiali pro in < 10 min</div>
+        </div>
+        <div class="agent-card">
+            <div class="agent-num">Agente 04</div>
+            <div class="agent-icon">📣</div>
+            <div class="agent-name">Marketing Agent</div>
+            <div class="agent-task">Scrive annunci SEO, pubblica su tutti i portali, pianifica campagne social e Google Ads, risponde a lead su WhatsApp 24/7.</div>
+            <div class="agent-output">→ Online in < 24 ore</div>
+        </div>
+        <div class="agent-card">
+            <div class="agent-num">Agente 05</div>
+            <div class="agent-icon">🤝</div>
+            <div class="agent-name">Deal & Post-Sale Agent</div>
+            <div class="agent-task">Gestisce la trattativa digitale, coordina mutuo e notaio, attiva nurturing post-rogito, genera referral e revenue ricorrente.</div>
+            <div class="agent-output">→ Revenue oltre il rogito</div>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:1.5rem;padding:1rem;background:rgba(122,0,223,0.05);border-radius:10px;border:1px solid var(--border)">
+        <p style="font-size:0.82rem;color:var(--gray)">Gli agenti lavorano <strong style="color:var(--white)">in parallelo e in modo autonomo</strong>. L'agente umano riceve solo il risultato finale. Nessun software da aprire, nessun prompt da scrivere.</p>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 5. WORKFLOW ===== -->
+<section id="workflow">
+    <div class="label">Workflow Agentico</div>
+    <h2 class="title">5 fasi. Dall'incarico al rogito.<br><span class="grad">Ogni fase ha il suo agente.</span></h2>
+
+    <!-- Header row -->
+    <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:0;margin-top:2rem;border-radius:12px 12px 0 0;overflow:hidden;border:1px solid var(--border);border-bottom:none">
+        <div style="padding:0.6rem 1rem;background:rgba(122,0,223,0.12);border-right:1px solid var(--border)">
+            <span style="font-family:'Space Grotesk';font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--purple)">Fase → Agente</span>
+        </div>
+        <div style="padding:0.6rem 1rem;background:rgba(239,68,68,0.06);border-right:1px solid var(--border);text-align:center">
+            <span style="font-family:'Space Grotesk';font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--red)">❌ Oggi</span>
+        </div>
+        <div style="padding:0.6rem 1rem;background:rgba(0,208,132,0.06);text-align:center">
+            <span style="font-family:'Space Grotesk';font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--green)">✅ Con MetaCasa</span>
+        </div>
+    </div>
+
+    <!-- Rows -->
+    <div style="border:1px solid var(--border);border-radius:0 0 12px 12px;overflow:hidden">
+
+        <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;border-bottom:1px solid var(--border)">
+            <div style="padding:0.9rem 1rem;background:var(--card);border-right:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.3rem">
+                    <span style="font-family:'Space Grotesk';font-size:0.62rem;font-weight:800;background:rgba(122,0,223,0.2);color:var(--purple);padding:0.15rem 0.4rem;border-radius:4px">F1</span>
+                    <span style="font-size:0.82rem;font-weight:700">🏠 Acquisizione</span>
+                </div>
+                <span class="agent-badge">Acquisition Agent</span>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(239,68,68,0.03);border-right:1px solid var(--border)">
+                <p style="font-size:0.75rem;color:var(--muted)">Farming manuale, 10+ tool, valutazione approssimativa, ore perse</p>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(0,208,132,0.03)">
+                <p style="font-size:0.75rem;color:var(--gray)">L'agente censisce proprietari, genera CMA e precompila il mandato in autonomia</p>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;border-bottom:1px solid var(--border)">
+            <div style="padding:0.9rem 1rem;background:var(--card);border-right:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.3rem">
+                    <span style="font-family:'Space Grotesk';font-size:0.62rem;font-weight:800;background:rgba(122,0,223,0.2);color:var(--purple);padding:0.15rem 0.4rem;border-radius:4px">F2</span>
+                    <span style="font-size:0.82rem;font-weight:700">📋 Documenti</span>
+                </div>
+                <span class="agent-badge">Compliance Agent</span>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(239,68,68,0.03);border-right:1px solid var(--border)">
+                <p style="font-size:0.75rem;color:var(--muted)">AML a mano, Drive/WhatsApp, nessuna data room strutturata</p>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(0,208,132,0.03)">
+                <p style="font-size:0.75rem;color:var(--gray)">L'agente esegue AML, verifica documenti e costruisce il fascicolo legale in loop</p>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;border-bottom:1px solid var(--border)">
+            <div style="padding:0.9rem 1rem;background:var(--card);border-right:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.3rem">
+                    <span style="font-family:'Space Grotesk';font-size:0.62rem;font-weight:800;background:rgba(122,0,223,0.2);color:var(--purple);padding:0.15rem 0.4rem;border-radius:4px">F3</span>
+                    <span style="font-size:0.82rem;font-weight:700">📸 Valorizzazione</span>
+                </div>
+                <span class="agent-badge">Visual Agent</span>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(239,68,68,0.03);border-right:1px solid var(--border)">
+                <p style="font-size:0.75rem;color:var(--muted)">Fotografo + geometra + videomaker. €850+, 5-10 giorni d'attesa</p>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(0,208,132,0.03)">
+                <p style="font-size:0.75rem;color:var(--gray)">L'agente elabora foto, staging, video, planimetrie e virtual tour — in minuti</p>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;border-bottom:1px solid var(--border)">
+            <div style="padding:0.9rem 1rem;background:var(--card);border-right:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.3rem">
+                    <span style="font-family:'Space Grotesk';font-size:0.62rem;font-weight:800;background:rgba(122,0,223,0.2);color:var(--purple);padding:0.15rem 0.4rem;border-radius:4px">F4</span>
+                    <span style="font-size:0.82rem;font-weight:700">🤝 Vendita</span>
+                </div>
+                <span class="agent-badge">Marketing Agent</span>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(239,68,68,0.03);border-right:1px solid var(--border)">
+                <p style="font-size:0.75rem;color:var(--muted)">Trattativa su WhatsApp, coordinamento manuale notaio/banca</p>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(0,208,132,0.03)">
+                <p style="font-size:0.75rem;color:var(--gray)">L'agente pubblica, risponde ai lead 24/7, gestisce l'offerta e coordina il rogito</p>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr">
+            <div style="padding:0.9rem 1rem;background:var(--card);border-right:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.3rem">
+                    <span style="font-family:'Space Grotesk';font-size:0.62rem;font-weight:800;background:rgba(122,0,223,0.2);color:var(--purple);padding:0.15rem 0.4rem;border-radius:4px">+1</span>
+                    <span style="font-size:0.82rem;font-weight:700">📞 Post-Vendita</span>
+                </div>
+                <span class="agent-badge">Deal Agent</span>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(239,68,68,0.03);border-right:1px solid var(--border)">
+                <p style="font-size:0.75rem;color:var(--muted)">Rapporto perso dopo il rogito. Zero nurturing, zero referral automatico</p>
+            </div>
+            <div style="padding:0.9rem 1rem;background:rgba(0,208,132,0.03)">
+                <p style="font-size:0.75rem;color:var(--gray)">L'agente attiva nurturing autonomo, genera referral e revenue ricorrente</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary bar -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+        <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:1rem;text-align:center">
+            <div style="font-family:'Space Grotesk';font-size:1.6rem;font-weight:800;color:var(--red)">15–20 giorni</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:0.2rem">Metodo tradizionale · €1.000+ · 10+ fornitori · 0 agenti AI</div>
+        </div>
+        <div style="background:rgba(0,208,132,0.06);border:1px solid rgba(0,208,132,0.15);border-radius:10px;padding:1rem;text-align:center">
+            <div style="font-family:'Space Grotesk';font-size:1.6rem;font-weight:800;color:var(--green)">&lt; 24 ore</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:0.2rem">Con MetaCasa · €49 · 1 piattaforma · 5 agenti AI in parallelo</div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 6. TECNOLOGIA ===== -->
+<section id="tecnologia">
+    <div class="label">Tecnologia Proprietaria</div>
+    <h2 class="title">Da planimetria catastale a<br><span class="grad">asset digitale agentico.</span></h2>
+    <p class="sub">Il Visual Agent elabora autonomamente planimetrie, foto e video. Da documento grezzo a output professionale e virtual tour immersivo — senza intervento umano. Il modello AI è proprietario e addestrato su dati immobiliari italiani.</p>
+
+    <!-- Planimetria Before/After -->
+    <div class="ba-wrap">
+        <div class="ba-box" style="background:#f5f5f5">
+            <img src="img/planimetria-before.jpg" alt="Planimetria catastale originale" style="object-fit:contain;background:#f5f5f5;padding:1rem" onerror="this.src='https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&q=70'">
+            <span class="ba-tag before">📐 Input: planimetria catastale grezza</span>
+        </div>
+        <div class="ba-box" style="background:#f8f9fc">
+            <img src="img/planimetria-after.jpg" alt="Planimetria elaborata MetaCasa" style="object-fit:contain;background:#f8f9fc;padding:1rem" onerror="this.src='https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=70'">
+            <span class="ba-tag after">🤖 Output: Visual Agent MetaCasa</span>
+        </div>
+    </div>
+    <div style="text-align:center;margin-top:1rem"><p style="font-size:0.82rem;color:var(--gray)">Il Visual Agent percepisce il documento, lo elabora e restituisce planimetria pulita, quotata e pronta per la vendita.</p></div>
+
+    <!-- Platform Mockup -->
+    <div style="margin-top:3rem">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);position:relative">
+            <img src="img/platform-studio.jpg" alt="MetaCasa AI Studio" style="width:100%;display:block" onerror="this.parentElement.innerHTML='<div style=padding:4rem;text-align:center;background:var(--card)><p style=color:var(--muted)>Platform screenshot loading...</p></div>'">
+            <div style="position:absolute;top:12px;left:12px;background:rgba(15,15,26,0.85);backdrop-filter:blur(10px);padding:0.3rem 0.8rem;border-radius:8px;font-size:0.7rem;font-weight:600;font-family:'Space Grotesk';color:var(--cyan);border:1px solid rgba(6,182,212,0.2)">MetaCasa AI Studio — Visual Agent Interface</div>
+        </div>
+        <p style="text-align:center;margin-top:0.8rem;font-size:0.8rem;color:var(--muted)">L'agente posiziona telecamere sulla planimetria e genera viste AI da ogni prospettiva. Tutto eseguito in autonomia.</p>
+    </div>
+
+    <!-- Virtual Tour -->
+    <div style="margin-top:2rem">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);position:relative">
+            <iframe src="https://panorama.homestyler.com/v2/index.html?sid=ftGfuokmGJcWkkpzFacfq8&teamId=6e8595485a0b4ddca81c15942e4f0431&locale=it_IT" style="width:100%;height:450px;border:none" allowfullscreen loading="lazy"></iframe>
+            <div style="position:absolute;top:12px;left:12px;background:rgba(15,15,26,0.85);backdrop-filter:blur(10px);padding:0.3rem 0.8rem;border-radius:8px;font-size:0.7rem;font-weight:600;font-family:'Space Grotesk';color:var(--cyan);border:1px solid rgba(6,182,212,0.2);z-index:10">🤖 Output Visual Agent — Virtual Tour Immersivo</div>
+        </div>
+        <p style="text-align:center;margin-top:0.8rem;font-size:0.8rem;color:var(--muted)">Da planimetria catastale a virtual tour navigabile con arredo fotorealistico. Generato dall'agente. Naviga tu stesso qui sopra.</p>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 7. PRIMA/DOPO ===== -->
+<section id="risultato">
+    <div class="label">Il Risultato</div>
+    <h2 class="title">Da foto grezza a<br><span class="grad">asset professionale in minuti.</span></h2>
+    <p class="sub">Il Visual Agent sostituisce 12 servizi separati, elaborando in parallelo foto, video, planimetrie e annunci. Un click. Zero attese. Zero fornitori.</p>
+
+    <div class="ba-wrap">
+        <div class="ba-box">
+            <img src="img/before.jpg" alt="Prima" onerror="this.src='https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&q=70'">
+            <span class="ba-tag before">📱 Input: foto smartphone</span>
+        </div>
+        <div class="ba-box">
+            <img src="img/after.jpg" alt="Dopo" onerror="this.src='https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=70'">
+            <span class="ba-tag after">🤖 Output: Visual Agent — staging AI + HD</span>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:1.2rem"><p style="font-size:0.85rem;color:var(--gray)">Staging, enhancement, planimetrie, video, annunci — 5 agenti AI lavorano in parallelo su ogni immobile.</p></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 8. TRACTION ===== -->
+<section id="traction">
+    <div class="label">Proven Results</div>
+    <h2 class="title">Crescita validata<br><span class="grad">dal mercato.</span></h2>
+
+    <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(99,91,255,0.08);border:1px solid rgba(99,91,255,0.2);padding:0.3rem 0.8rem;border-radius:6px;margin-bottom:1.5rem;font-size:0.7rem;font-weight:600;color:#635BFF;font-family:'Space Grotesk'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#635BFF" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Transactions Verified via Stripe
+    </div>
+
+    <div class="grid-4">
+        <div class="card" style="text-align:center"><div class="big" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">€500k+</div><p>Ricavi annui ricorrenti</p></div>
+        <div class="card" style="text-align:center"><div class="big" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">1.000+</div><p>Agenzie clienti attive</p></div>
+        <div class="card" style="text-align:center"><div class="big" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">30k+</div><p>Immobili processati dagli agenti</p></div>
+        <div class="card" style="text-align:center"><div class="big" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">250k+</div><p>Ore risparmiate — sostituite dagli agenti</p></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1.5rem">
+        <div class="card" style="background:linear-gradient(135deg,rgba(122,0,223,0.08),var(--card))">
+            <h3 style="margin-bottom:0.8rem">Success Story — TopHome Agency</h3>
+            <p style="font-style:italic;margin-bottom:1rem">"Abbiamo smesso di fare data entry manuale. Gli agenti AI gestiscono tutto. Noi chiudiamo più contratti."</p>
+            <div style="display:flex;gap:2rem">
+                <div><span style="font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;color:var(--green)">+40%</span><br><span style="font-size:0.7rem;color:var(--muted)">Velocità pubblicazione</span></div>
+                <div><span style="font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;color:var(--green)">-€20k</span><br><span style="font-size:0.7rem;color:var(--muted)">Costi operativi/anno</span></div>
+            </div>
+        </div>
+        <div class="card">
+            <h3 style="margin-bottom:0.8rem">Unit Economics</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+                <div><span style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;color:var(--cyan)">€1.500</span><br><span style="font-size:0.68rem;color:var(--muted)">ARPU / anno</span></div>
+                <div><span style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;color:var(--cyan)">85%</span><br><span style="font-size:0.68rem;color:var(--muted)">Gross margin</span></div>
+                <div><span style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;color:var(--cyan)">>10x</span><br><span style="font-size:0.68rem;color:var(--muted)">LTV / CAC</span></div>
+                <div><span style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;color:var(--cyan)">4x</span><br><span style="font-size:0.68rem;color:var(--muted)">Crescita YoY</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 9. COMPETITOR ===== -->
+<section id="competitor">
+    <div class="label">Posizionamento Competitivo</div>
+    <h2 class="title">Nessuno ha agenti.<br><span class="grad">MetaCasa sì.</span></h2>
+    <p class="sub">44 tool mappati dall'audit 2026. Nessun competitor ha architettura multi-agente, né copre l'intero workflow in Europa. Siamo l'unico OS agentico per il Real Estate EU.</p>
+
+    <div style="margin-top:2rem;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
+            <thead>
+                <tr>
+                    <th style="padding:0.7rem 1rem;text-align:left;font-family:'Space Grotesk';font-size:0.75rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);min-width:160px">Funzionalità</th>
+                    <th style="padding:0.7rem 1rem;text-align:center;font-family:'Space Grotesk';font-size:0.78rem;font-weight:700;border-bottom:2px solid var(--purple);background:rgba(122,0,223,0.08)">
+                        <div style="background:linear-gradient(90deg,#7A00DF,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">MetaCasa</div>
+                        <div style="font-size:0.65rem;color:var(--muted);font-weight:400;margin-top:2px">OS Agentico EU</div>
+                    </th>
+                    <th style="padding:0.7rem 1rem;text-align:center;font-family:'Space Grotesk';font-size:0.78rem;font-weight:600;border-bottom:1px solid var(--border);color:var(--gray)">CRM<br><span style="font-size:0.65rem;font-weight:400;color:var(--muted)">Gestim / onOffice</span></th>
+                    <th style="padding:0.7rem 1rem;text-align:center;font-family:'Space Grotesk';font-size:0.78rem;font-weight:600;border-bottom:1px solid var(--border);color:var(--gray)">Visual AI<br><span style="font-size:0.65rem;font-weight:400;color:var(--muted)">Matterport / Floorfy</span></th>
+                    <th style="padding:0.7rem 1rem;text-align:center;font-family:'Space Grotesk';font-size:0.78rem;font-weight:600;border-bottom:1px solid var(--border);color:var(--gray)">OS USA<br><span style="font-size:0.65rem;font-weight:400;color:var(--muted)">Compass / Breezy</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <td style="padding:0.75rem 1rem;color:var(--gray);font-size:0.78rem">Architettura multi-agente</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;background:rgba(122,0,223,0.05)"><span style="color:#22c55e;font-size:1rem">✅</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:#f59e0b;font-size:1rem">〜</span> <span style="font-size:0.65rem;color:var(--muted)">parziale USA</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <td style="padding:0.75rem 1rem;color:var(--gray);font-size:0.78rem">Workflow end-to-end</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;background:rgba(122,0,223,0.05)"><span style="color:#22c55e;font-size:1rem">✅</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:#22c55e;font-size:1rem">✅</span> <span style="font-size:0.65rem;color:var(--muted)">solo USA</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <td style="padding:0.75rem 1rem;color:var(--gray);font-size:0.78rem">Visual AI (foto, video, staging)</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;background:rgba(122,0,223,0.05)"><span style="color:#22c55e;font-size:1rem">✅</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:#f59e0b;font-size:1rem">〜</span> <span style="font-size:0.65rem;color:var(--muted)">parziale</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <td style="padding:0.75rem 1rem;color:var(--gray);font-size:0.78rem">Marketing automation</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;background:rgba(122,0,223,0.05)"><span style="color:#22c55e;font-size:1rem">✅</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:#f59e0b;font-size:1rem">〜</span> <span style="font-size:0.65rem;color:var(--muted)">parziale</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <td style="padding:0.75rem 1rem;color:var(--gray);font-size:0.78rem">Compliance docs & AML</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;background:rgba(122,0,223,0.05)"><span style="color:#22c55e;font-size:1rem">✅</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:#f59e0b;font-size:1rem">〜</span> <span style="font-size:0.65rem;color:var(--muted)">base</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <td style="padding:0.75rem 1rem;color:var(--gray);font-size:0.78rem">Presenza EU + GDPR nativo</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;background:rgba(122,0,223,0.05)"><span style="color:#22c55e;font-size:1rem">✅</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:#22c55e;font-size:1rem">✅</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                    <td style="padding:0.75rem 1rem;text-align:center"><span style="color:var(--red);font-size:1rem">❌</span></td>
+                </tr>
+                <tr>
+                    <td style="padding:0.75rem 1rem;color:var(--gray);font-size:0.78rem">Prezzo per immobile</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;background:rgba(122,0,223,0.05);font-size:0.8rem;font-weight:700;color:var(--white)">da €49</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;color:var(--muted)">€50–100/mese flat</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;color:var(--muted)">€350+/tour</td>
+                    <td style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;color:var(--muted)">N/A (solo USA)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="text-align:center;margin-top:1.5rem;padding:1rem 1.5rem;background:linear-gradient(135deg,rgba(122,0,223,0.1),rgba(6,182,212,0.05));border-radius:10px;border:1px solid rgba(122,0,223,0.2)">
+        <p style="font-size:0.88rem;font-weight:700;color:var(--white);font-family:'Space Grotesk'">Unico OS multi-agente per il Real Estate in Europa</p>
+        <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Audit 2026: 44 tool mappati · 25 lacune identificate · 10 gap critici · 0 competitor con architettura agentica in EU</p>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 10. PRICING ===== -->
+<section id="numeri">
+    <div class="label">Pricing</div>
+    <h2 class="title">Dall'agente singolo al franchising.<br><span class="grad">Zero barriere d'ingresso.</span></h2>
+    <p class="sub" style="margin-bottom:0.5rem">Abbonamento mensile che attiva tutti gli agenti AI. Più usi gli agenti, più risparmi.</p>
+
+    <div class="price-row">
+        <div class="price-box"><div class="tier">Starter</div><div class="amt">€29<span>/mese</span></div><div class="feat">1 agente<br>Visual Agent base<br>Photo enhancement</div></div>
+        <div class="price-box pop"><div class="tier">Pro</div><div class="amt">€149<span>/mese</span></div><div class="feat">Piccole agenzie<br>3 agenti AI attivi<br>Social automation</div></div>
+        <div class="price-box"><div class="tier">Agency</div><div class="amt">€299<span>/mese</span></div><div class="feat">Team 5+ agenti<br>5 agenti AI completi<br>Multi-seat admin</div></div>
+        <div class="price-box"><div class="tier">Business</div><div class="amt">€499<span>/mese</span></div><div class="feat">Agenzie strutturate<br>Full agentic suite<br>Priority support</div></div>
+        <div class="price-box"><div class="tier">Enterprise</div><div class="amt">Custom</div><div class="feat">Franchising & network<br>API + agenti custom<br>SLA dedicato</div></div>
+    </div>
+
+    <div style="text-align:center;margin-top:1rem"><p style="font-size:0.78rem;color:var(--muted)">+ Pay-per-use: da €49/immobile — gli agenti AI eseguono l'intero workflow in autonomia</p></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 11. MARKET SIZE ===== -->
+<section id="market">
+    <div class="label">Mercato Software Immobiliare</div>
+    <h2 class="title">Il mercato degli OS agentici<br><span class="grad">è ancora tutto da prendere.</span></h2>
+
+    <div class="tam-row">
+        <div class="card tam-card"><div class="tam-val">$14B</div><div class="tam-name">TAM — Global RE Software</div><div class="tam-desc">Mercato software Real Estate globale 2025. CAGR 12.8%. L'AI agentica sta ridefinendo ogni categoria.<br><span style="font-size:0.65rem;color:var(--muted)">Fonte: Grand View Research</span></div></div>
+        <div class="card tam-card"><div class="tam-val">€1.5B</div><div class="tam-name">SAM — EU RE Software</div><div class="tam-desc">SaaS, CRM e tools per agenzie in Europa. Italia = 13-15%. Nessun OS agentico presente. CAGR 18.7%.<br><span style="font-size:0.65rem;color:var(--muted)">Fonte: Market Data Forecast</span></div></div>
+        <div class="card tam-card" style="border-color:var(--purple)"><div class="tam-val">€260M</div><div class="tam-name">SOM — Italia Software</div><div class="tam-desc">~40.000 agenzie x €6.500/anno in software. Solo il 16% ha avviato digital transformation. Gap enorme.<br><span style="font-size:0.65rem;color:var(--muted)">Bottom-up. Source: MarketDataForecast</span></div></div>
+    </div>
+
+    <div style="margin-top:1.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
+        <div style="text-align:center;padding:1rem;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;color:var(--white)">40.000</div>
+            <div style="font-size:0.7rem;color:var(--muted)">Agenzie strutturate in Italia</div>
+        </div>
+        <div style="text-align:center;padding:1rem;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;color:var(--white)">700k+</div>
+            <div style="font-size:0.7rem;color:var(--muted)">Transazioni / anno</div>
+        </div>
+        <div style="text-align:center;padding:1rem;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;color:var(--white)">€6.500</div>
+            <div style="font-size:0.7rem;color:var(--muted)">Spesa media software / anno</div>
+        </div>
+        <div style="text-align:center;padding:1rem;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-family:'Space Grotesk';font-size:1.4rem;font-weight:800;color:var(--white)">16%</div>
+            <div style="font-size:0.7rem;color:var(--muted)">Ha fatto vera digital transformation</div>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:1rem">
+        <p style="font-size:0.78rem;color:var(--muted)">84% delle agenzie non ha ancora adottato un OS agentico. Opportunità da €218M di SOM non presidiata. AI in RE: CAGR 30.5%, $41.5B entro 2033.</p>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 12. ROADMAP ===== -->
+<section id="roadmap">
+    <div class="label">Roadmap Agentica</div>
+    <h2 class="title">Da OS italiano a<br><span class="grad">standard agentico europeo.</span></h2>
+
+    <div class="road-row">
+        <div class="road-box">
+            <div class="road-yr">2026</div>
+            <div class="road-arr">€1M ARR</div>
+            <div class="road-items">
+                → Scale-up Italia<br>
+                → Agentic Video Suite<br>
+                → Voice &amp; WhatsApp AI Agent<br>
+                → Seed Round Close<br>
+                → <span style="color:var(--cyan)">5 agenti in produzione</span>
+            </div>
+        </div>
+        <div class="road-box">
+            <div class="road-yr">2027</div>
+            <div class="road-arr">€2M ARR</div>
+            <div class="road-items">
+                → Deep CRM Sync<br>
+                → Full Doc-Intelligence Agent<br>
+                → Ad-Tech autopilot Agent<br>
+                → Espansione Spagna<br>
+                → <span style="color:var(--cyan)">10+ agenti specializzati</span>
+            </div>
+        </div>
+        <div class="road-box">
+            <div class="road-yr">2028</div>
+            <div class="road-arr">€4.5M ARR</div>
+            <div class="road-items">
+                → Espansione Europa<br>
+                → Standard BIM Agentico<br>
+                → Autonomous Broker Agents<br>
+                → Serie A Funding<br>
+                → <span style="color:var(--cyan)">Agenti apprendono dal mercato</span>
+            </div>
+        </div>
+        <div class="road-box">
+            <div class="road-yr">2029</div>
+            <div class="road-arr">€9.5M ARR</div>
+            <div class="road-items">
+                → Market Leadership EU<br>
+                → Protocol Banche/Notai<br>
+                → Exit Ready / IPO Path<br>
+                → <span style="color:var(--cyan)">OS agentico standard EU</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 13. TEAM ===== -->
+<section id="team">
+    <div class="label">Il Team</div>
+    <h2 class="title">Real Estate + AI + Operations.<br><span class="grad">I costruttori dell'OS.</span></h2>
+
+    <div class="team-row">
+        <div class="team-card">
+            <div class="team-photo"><img src="img/sacha-gentili.jpg" alt="Sacha Gentili" onerror="this.style.display='none';this.parentElement.innerHTML='<span>SG</span>'"></div>
+            <div class="role">CEO & Founder</div>
+            <h3>Sacha Gentili</h3>
+            <p>10+ anni nel Real Estate. Visione del prodotto agentico e sales leader.</p>
+        </div>
+        <div class="team-card">
+            <div class="team-photo"><img src="img/daniele-scaglia.jpg" alt="Daniele Scaglia" onerror="this.style.display='none';this.parentElement.innerHTML='<span>DS</span>'"></div>
+            <div class="role">COO & Co-Founder</div>
+            <h3>Daniele Scaglia</h3>
+            <p>Esperto B2B e Operations. Ha scalato team da 0 a 50 persone. Orchestrazione dei processi aziendali.</p>
+        </div>
+        <div class="team-card">
+            <div class="team-photo"><img src="img/juxhim-radhima.jpg" alt="Juxhim Radhima" onerror="this.style.display='none';this.parentElement.innerHTML='<span>JR</span>'"></div>
+            <div class="role">CTO & Co-Founder</div>
+            <h3>Juxhim Radhima</h3>
+            <p>Senior AI Engineer. Specializzato in LLM, Agentic Workflows e sistemi multi-agente.</p>
+        </div>
+    </div>
+
+    <div class="advisors">
+        <div class="adv"><div class="adv-pic"><img src="img/edoardo-zita.jpg" alt="EZ" onerror="this.style.display='none';this.parentElement.innerHTML='EZ'"></div><div class="name">Edoardo Zita</div><div class="title">Partnership Advisor</div></div>
+        <div class="adv"><div class="adv-pic"><img src="img/francesco-meani.jpg" alt="FM" onerror="this.style.display='none';this.parentElement.innerHTML='FM'"></div><div class="name">Francesco Meani</div><div class="title">Tech Advisor</div></div>
+        <div class="adv"><div class="adv-pic"><img src="img/marco-caradonna.jpg" alt="MC" onerror="this.style.display='none';this.parentElement.innerHTML='MC'"></div><div class="name">Marco Caradonna</div><div class="title">Growth Advisor</div></div>
+        <div class="adv"><div class="adv-pic"><img src="img/marco-marlia.jpg" alt="MM" onerror="this.style.display='none';this.parentElement.innerHTML='MM'"></div><div class="name">Marco Marlia</div><div class="title">Tech Advisor</div></div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== 14. THE ASK ===== -->
+<section class="final" id="ask">
+    <div style="position:relative;z-index:1">
+        <div class="label">Invest</div>
+        <h2 class="title" style="margin:0 auto 1rem">L'OS agentico dell'immobiliare<br>europeo ha bisogno di <span class="grad">un acceleratore.</span></h2>
+        <p class="sub" style="margin:0 auto">Seed Round aperto. Entra nell'unica piattaforma multi-agente per il Real Estate in Europa.</p>
+
+        <div class="grid-4" style="max-width:700px;margin:2rem auto">
+            <div class="card" style="text-align:center;padding:1.2rem"><div style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">€1M</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Seed Round</div></div>
+            <div class="card" style="text-align:center;padding:1.2rem"><div style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">€8M</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Pre-Money</div></div>
+            <div class="card" style="text-align:center;padding:1.2rem"><div style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Q3 2026</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Target Close</div></div>
+            <div class="card" style="text-align:center;padding:1.2rem"><div style="font-family:'Space Grotesk';font-size:1.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">~119%</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">CAGR</div></div>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem">
+            <span style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.7rem;font-size:0.72rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--purple);display:inline-block"></span>40% Agenti AI & R&D</span>
+            <span style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.7rem;font-size:0.72rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--cyan);display:inline-block"></span>30% Sales & Marketing</span>
+            <span style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.7rem;font-size:0.72rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>20% Ops</span>
+            <span style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.7rem;font-size:0.72rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span>10% Legal</span>
+        </div>
+
+        <a href="mailto:sacha.gentili@metacasa.ai" style="display:inline-block;background:var(--grad);color:white;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1rem;font-family:'Space Grotesk';box-shadow:0 8px 40px rgba(122,0,223,0.3);transition:transform 0.2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Parliamone →</a>
+        <p style="margin-top:0.8rem;font-size:0.8rem;color:var(--muted)">sacha.gentili@metacasa.ai</p>
+    </div>
+</section>
+
+<footer>
+    <p>MetaCasa &copy; 2026 — L'OS Agentico per il Real Estate. <span style="color:var(--purple)">v2</span></p>
+    <p style="margin-top:0.3rem"><a href="https://metacasa.ai">metacasa.ai</a></p>
+</footer>
+
+<script>
+(function(){
+    const SLIDES = [
+        {id:'hero',      label:'Intro'},
+        {id:'problema',  label:'Problema'},
+        {id:'soluzione', label:'Soluzione'},
+        {id:'agenti',    label:'Agenti AI'},
+        {id:'workflow',  label:'Workflow'},
+        {id:'tecnologia',label:'Tecnologia'},
+        {id:'risultato', label:'Risultato'},
+        {id:'traction',  label:'Traction'},
+        {id:'competitor',label:'Posizionamento'},
+        {id:'numeri',    label:'Pricing'},
+        {id:'market',    label:'Mercato'},
+        {id:'roadmap',   label:'Roadmap'},
+        {id:'team',      label:'Team'},
+        {id:'ask',       label:'Invest'}
+    ];
+
+    const nav   = document.getElementById('slideNav');
+    const curEl = document.getElementById('curPage');
+    const totEl = document.getElementById('totPages');
+
+    const slides = SLIDES.filter(s => document.getElementById(s.id));
+    totEl.textContent = slides.length;
+
+    slides.forEach((s, i) => {
+        const a = document.createElement('a');
+        a.href = '#' + s.id;
+        a.className = 'slide-nav-item';
+        a.setAttribute('aria-label', s.label);
+        a.title = s.label;
+        a.innerHTML = `<span class="pg">${i+1}</span><span class="dot"></span>`;
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            document.getElementById(s.id).scrollIntoView({behavior:'smooth', block:'start'});
+        });
+        nav.appendChild(a);
+    });
+
+    const items = Array.from(nav.querySelectorAll('.slide-nav-item'));
+
+    function setActive(idx) {
+        items.forEach((el, i) => el.classList.toggle('active', i === idx));
+        curEl.textContent = idx + 1;
+    }
+
+    let activeIdx = 0;
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const idx = slides.findIndex(s => s.id === entry.target.id);
+                if (idx !== -1) { activeIdx = idx; setActive(idx); }
+            }
+        });
+    }, {threshold: 0.3});
+
+    slides.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (el) io.observe(el);
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const next = Math.min(activeIdx + 1, slides.length - 1);
+            document.getElementById(slides[next].id).scrollIntoView({behavior:'smooth', block:'start'});
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const prev = Math.max(activeIdx - 1, 0);
+            document.getElementById(slides[prev].id).scrollIntoView({behavior:'smooth', block:'start'});
+        }
+    });
+
+    setActive(0);
+})();
+</script>
+
+</body>
+</html>
