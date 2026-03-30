@@ -140,7 +140,12 @@
             .stats{gap:1.2rem}
             .impact{flex-direction:column;gap:0.5rem}
             .advisors{flex-direction:column;align-items:center}
-            .slide-nav{display:none}
+            .slide-nav{display:none !important}
+            .page-counter{display:none !important}
+            .nav-version-label{display:none !important}
+            .seed-label{font-size:0.6rem;padding:0.2rem 0.5rem}
+            #userGreeting{font-size:0.7rem}
+            nav{padding:0.6rem 1rem}
             .orch-bar{flex-direction:column;align-items:flex-start}
         }
 
@@ -349,7 +354,7 @@
     <div class="logo"><img src="img/logo-metacasa-inv.svg" alt="MetaCasa" style="height:30px" onerror="this.outerHTML='META<b>CASA</b>'"></div>
     <div style="display:flex;align-items:center;gap:1rem">
         <span id="userGreeting" style="display:none;font-size:0.75rem;font-family:'Space Grotesk';color:var(--white);font-weight:600"></span>
-        <span style="font-size:0.7rem;color:var(--muted);font-family:'Space Grotesk'">Agentic OS v2</span>
+        <span class="nav-version-label" style="font-size:0.7rem;color:var(--muted);font-family:'Space Grotesk'">Agentic OS v2</span>
         <span class="seed-label">⚡ Seed Round — €1M</span>
     </div>
 </nav>
