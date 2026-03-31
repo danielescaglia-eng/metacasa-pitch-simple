@@ -64,6 +64,16 @@
         .clear-btn{background:none;border:none;color:var(--muted);font-size:0.72rem;cursor:pointer;text-decoration:underline;font-family:'Inter'}
         .clear-btn:hover{color:var(--red)}
 
+        /* Delete selection */
+        .delete-sel-btn{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:6px;padding:0.3rem 0.8rem;font-size:0.72rem;cursor:pointer;font-family:'Space Grotesk';font-weight:600;transition:all 0.2s;display:none}
+        .delete-sel-btn:hover{background:rgba(239,68,68,0.2)}
+        .delete-sel-btn.visible{display:inline-block}
+        tbody tr.flagged{background:rgba(239,68,68,0.06)}
+        tbody tr.flagged td{color:rgba(240,240,245,0.45)}
+        input[type=checkbox].row-cb{accent-color:var(--red);width:14px;height:14px;cursor:pointer}
+        .sel-count{font-size:0.72rem;color:var(--red);font-weight:600;display:none}
+        .sel-count.visible{display:inline}
+
         @media(max-width:768px){
             .stats-row{grid-template-columns:1fr 1fr}
             table{font-size:0.75rem}
@@ -92,8 +102,10 @@
             <div class="crm-logo">META<span>CASA</span> — Investor CRM</div>
             <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">Lead registrati dalla pitch page v2</div>
         </div>
-        <div style="display:flex;gap:0.8rem;align-items:center">
-            <button class="clear-btn" id="clearBtn">🗑 Svuota dati demo</button>
+        <div style="display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap">
+            <span class="sel-count" id="selCount">0 selezionati</span>
+            <button class="delete-sel-btn" id="deleteSelBtn">🗑 Elimina selezionati</button>
+            <button class="clear-btn" id="clearBtn">Svuota dati demo</button>
             <button class="export-btn" id="exportBtn">⬇ Esporta CSV</button>
             <button class="export-btn" id="logoutBtn" style="border-color:rgba(239,68,68,0.3);color:var(--muted)">Esci</button>
         </div>
@@ -229,7 +241,9 @@ async function renderDashboard(){
         const lastDate = l.lastViewAt   || l.last_view_at;
         const reg  = regDate  ? new Date(regDate).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
         const last = lastDate ? new Date(lastDate).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-        return `<tr>
+        const emailSafe = escHtml(l.email||'');
+        return `<tr data-email="${emailSafe}">
+            <td><input type="checkbox" class="row-cb" data-email="${emailSafe}" onchange="updateSelection()"> </td>
             <td><strong>${escHtml(l.name||'—')}</strong></td>
             <td style="color:var(--cyan)">${escHtml(l.email||'—')}</td>
             <td style="color:var(--gray)">${escHtml(l.company||'—')}</td>
@@ -243,6 +257,7 @@ async function renderDashboard(){
     container.innerHTML = `
         <table>
             <thead><tr>
+                <th><input type="checkbox" class="row-cb" id="selectAll" onchange="toggleSelectAll(this)" title="Seleziona tutti"></th>
                 <th>Nome</th><th>Email</th><th>Azienda</th><th>Ruolo</th>
                 <th>Visualizzazioni</th><th>Registrato</th><th>Ultima visita</th>
             </tr></thead>
@@ -254,6 +269,57 @@ async function renderDashboard(){
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── SELECTION ──
+function updateSelection(){
+    const checked = document.querySelectorAll('.row-cb[data-email]:checked');
+    const count   = checked.length;
+    const delBtn  = document.getElementById('deleteSelBtn');
+    const selCount= document.getElementById('selCount');
+    delBtn.classList.toggle('visible', count > 0);
+    selCount.classList.toggle('visible', count > 0);
+    selCount.textContent = count + ' selezionat' + (count === 1 ? 'o' : 'i');
+    // highlight flagged rows
+    document.querySelectorAll('tbody tr').forEach(tr => {
+        const cb = tr.querySelector('.row-cb');
+        tr.classList.toggle('flagged', cb && cb.checked);
+    });
+}
+
+function toggleSelectAll(master){
+    document.querySelectorAll('.row-cb[data-email]').forEach(cb => cb.checked = master.checked);
+    updateSelection();
+}
+
+// ── DELETE SELECTED ──
+document.getElementById('deleteSelBtn').addEventListener('click', async () => {
+    const checked = [...document.querySelectorAll('.row-cb[data-email]:checked')];
+    if(!checked.length) return;
+    const emails = checked.map(cb => cb.dataset.email);
+    const nomi   = emails.join('\n• ');
+    if(!confirm(`Elimina definitivamente ${emails.length} contatt${emails.length===1?'o':'i'}?\n\n• ${nomi}\n\nQuesta azione è irreversibile su Supabase.`)) return;
+
+    // Delete from Supabase
+    let errors = 0;
+    if(SB_ON){
+        for(const email of emails){
+            try {
+                const res = await fetch(
+                    `${SB_URL}/rest/v1/pitch_leads?email=eq.${encodeURIComponent(email)}`,
+                    { method:'DELETE', headers: { ...sbHeaders(), 'Content-Type':'application/json', 'Prefer':'return=minimal' } }
+                );
+                if(!res.ok) errors++;
+            } catch{ errors++; }
+        }
+    }
+
+    // Remove from localStorage too
+    const local = getLocalLeads().filter(l => !emails.includes(l.email));
+    localStorage.setItem(LEADS_KEY, JSON.stringify(local));
+
+    if(errors > 0) alert(`⚠️ ${errors} eliminazion${errors===1?'e':'i'} fallita/e su Supabase. Ricarica per verificare.`);
+    renderDashboard();
+});
 
 // ── EXPORT CSV ──
 document.getElementById('exportBtn').addEventListener('click', () => {
